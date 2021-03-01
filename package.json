@@ -1,0 +1,34 @@
+{
+  "name": "@gjsify/doclet",
+  "version": "0.0.1",
+  "description": "Experimental Valadoc extension to generate Typescript Definition files for Gjs and node-gtk",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "clear": "rm -rf @types builddir libdoclet.so",
+    "build": "npm run build:meson && npm run build:ninja",
+    "build:meson": "meson builddir",
+    "build:ninja": "ninja -C builddir",
+    "doc:gtk": "valadoc --verbose --target-glib 2.98 --importdir girs --doclet \"./builddir\" -o \"@types\" \"/usr/share/vala-0.48/vapi/gtk+-3.0.vapi\" --vapidir \"/usr/share/vala-0.48/vapi\" --girdir \"girs/gir-1.0\" --use-svg-images -X --disable-devhelp --importdir \"girs/gir-1.0\" --import Gtk-3.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gjsify/doclet.git"
+  },
+  "keywords": [
+    "gjs",
+    "node-gtk",
+    "typescript",
+    "definition",
+    "valadoc",
+    "vala",
+    "javascript",
+    "generate"
+  ],
+  "author": "Pascal Garber <pascal@artandcode.studio>",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/gjsify/doclet/issues"
+  },
+  "homepage": "https://github.com/gjsify/doclet#readme"
+}
