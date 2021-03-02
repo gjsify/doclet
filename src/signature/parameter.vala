@@ -28,7 +28,10 @@ public class Typescript.Parameter {
 				this.signature.append_keyword ("ref");
 			}
 
-			this.signature.append_content (@"TODO $(this.param.parameter_type.get_type())" /*this.param.parameter_type.signature*/);
+
+			var type = this.param.parameter_type;
+			var ts_type = new Typescript.TypeReference(type); 
+			this.signature.append_content (ts_type.get_signature());
 			this.signature.append (this.param.name);
 
 			if (this.param.has_default_value) {

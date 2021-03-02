@@ -1,34 +1,8 @@
-/* generator.vala
- *
- * Copyright (C) 2010 Luca Bruno
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
- *
- * Author:
- * 	Luca Bruno <lethalman88@gmail.com>
- */
-
-using Valadoc;
-using Valadoc.Api;
-using Valadoc.Content;
-
 public class Typescript.Generator : Valadoc.Api.Visitor {
 
 	private Valadoc.ErrorReporter reporter;
 	private Valadoc.Settings settings;
-	private Api.Tree current_tree;
+	private Valadoc.Api.Tree current_tree;
 
 	// private Valadoc.Api.Class current_class;
 
@@ -59,8 +33,22 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 * @param item a package
 	 */
 	public override void visit_package (Valadoc.Api.Package package) {
-		stdout.printf("visit_package: %s\n", package.name);
 		package.accept_all_children (this);
+
+		stdout.printf(@"visit_package: $(package.name)\n");
+		stdout.printf(@"visit_package get_full_name: $(package.get_full_name())\n");
+
+
+		//  string path = GLib.Path.build_filename (this.settings.path);
+		//  string filepath = GLib.Path.build_filename (path, package.name + ".d.ts");
+
+		//  DirUtils.create_with_parents (path, 0777);
+
+		//  var writer = new Typescript.Writer (filepath, "a+");
+		//  if (!writer.open ()) {
+		//  	reporter.simple_error ("Typescript", "unable to open '%s' for writing", writer.filename);
+		//  	return;
+		//  }
 	}
 
 	/**
@@ -80,23 +68,29 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	public override void visit_interface (Valadoc.Api.Interface iface) {
 		// stdout.printf("visit_interface: %s\n", (string) iface.name);
 
-		var abstract_methods = iface.get_children_by_types ({NodeType.METHOD}, false);
+		iface.accept_all_children (this);
+
+		var abstract_methods = iface.get_children_by_types ({Valadoc.Api.NodeType.METHOD}, false);
 		foreach (var m in abstract_methods) {
 			// List all protected methods, even if they're not marked as browsable
-			if (m.is_browsable (settings) || ((Symbol) m).is_protected) {
-				this.visit_abstract_method ((Api.Method) m);
+			if (m.is_browsable (this.settings) || ((Valadoc.Api.Symbol) m).is_protected) {
+				this.visit_abstract_method ((Valadoc.Api.Method) m);
 			}
 		}
 
-		var abstract_properties = iface.get_children_by_types ({NodeType.PROPERTY}, false);
+		var abstract_properties = iface.get_children_by_types ({Valadoc.Api.NodeType.PROPERTY}, false);
 		foreach (var prop in abstract_properties) {
 			// List all protected properties, even if they're not marked as browsable
-			if (prop.is_browsable (settings) || ((Symbol) prop).is_protected) {
-				this.visit_abstract_property ((Api.Property) prop);
+			if (prop.is_browsable (this.settings) || ((Valadoc.Api.Symbol) prop).is_protected) {
+				this.visit_abstract_property ((Valadoc.Api.Property) prop);
 			}
 		}
 
-		iface.accept_all_children (this);
+
+		var ts_iface = new Typescript.Interface(iface);
+		var sig = ts_iface.get_signature();
+		stdout.printf(@"$(sig)\n");
+
 	}
 
 	/**
@@ -105,43 +99,30 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 * @param item a class
 	 */
 	public override void visit_class (Valadoc.Api.Class cl) {
-		stdout.printf("visit_class: %s\n", (string) cl.name);
+		// stdout.printf("visit_class: %s\n", (string) cl.name);
 
 		cl.accept_all_children (this);
+	
+		var abstract_methods = cl.get_children_by_types ({Valadoc.Api.NodeType.METHOD}, false);
+		foreach (var m in abstract_methods) {
+			// List all protected methods, even if they're not marked as browsable
+			if (m.is_browsable (settings) || ((Valadoc.Api.Symbol) m).is_protected) {
+				visit_abstract_method ((Valadoc.Api.Method) m);
+			}
+		}
+
+		var abstract_properties = cl.get_children_by_types ({Valadoc.Api.NodeType.PROPERTY}, false);
+		foreach (var prop in abstract_properties) {
+			// List all protected properties, even if they're not marked as browsable
+			if (prop.is_browsable (settings) || ((Valadoc.Api.Symbol) prop).is_protected) {
+				visit_abstract_property ((Valadoc.Api.Property) prop);
+			}
+		}
+
 
 		var ts_class = new Typescript.Class(cl);
 		var sig = ts_class.get_signature();
-		stdout.printf(@"Signatur: $(sig)\n");
-
-	
-		//  string path = GLib.Path.build_filename (this.settings.path);
-		//  string filepath = GLib.Path.build_filename (path, cl.package.name + ".d.ts");
-
-		//  DirUtils.create_with_parents (path, 0777);
-
-		//  var writer = new Typescript.Writer (filepath, "a+");
-		//  if (!writer.open ()) {
-		//  	reporter.simple_error ("Typescript", "unable to open '%s' for writing", writer.filename);
-		//  	return;
-		//  }
-
-		//  this.current_class = cl;
-
-		var abstract_methods = cl.get_children_by_types ({NodeType.METHOD}, false);
-		foreach (var m in abstract_methods) {
-			// List all protected methods, even if they're not marked as browsable
-			if (m.is_browsable (settings) || ((Symbol) m).is_protected) {
-				visit_abstract_method ((Api.Method) m);
-			}
-		}
-
-		var abstract_properties = cl.get_children_by_types ({NodeType.PROPERTY}, false);
-		foreach (var prop in abstract_properties) {
-			// List all protected properties, even if they're not marked as browsable
-			if (prop.is_browsable (settings) || ((Symbol) prop).is_protected) {
-				visit_abstract_property ((Api.Property) prop);
-			}
-		}
+		stdout.printf(@"$(sig)\n");
 
 	}
 
@@ -193,7 +174,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 */
 	public override void visit_delegate (Valadoc.Api.Delegate dele) {
 		// stdout.printf("visit_delegate: %s\n", (string) dele.name);
-		dele.accept_children ({NodeType.FORMAL_PARAMETER, NodeType.TYPE_PARAMETER}, this);
+		dele.accept_children ({Valadoc.Api.NodeType.FORMAL_PARAMETER, Valadoc.Api.NodeType.TYPE_PARAMETER}, this);
 	}
 
 	/**

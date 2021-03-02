@@ -1,3 +1,7 @@
+
+/**
+ * <TypeParameter1, TypeParameter2>
+ */
 public class Typescript.TypeParameter {
     protected Valadoc.Api.TypeParameter type_param;
 	protected Typescript.SignatureBuilder signature = new Typescript.SignatureBuilder ();

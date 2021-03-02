@@ -7,11 +7,16 @@ public class Typescript.TypeReference {
     }
 
 	public string get_signature() {
+		string result;
 		if (this.signature.to_string().length <= 0) {
-			return build_signature();
+			result = build_signature();
 		} else {
-			return this.signature.to_string();
+			result = this.signature.to_string();
 		}
+		//  if (result.index_of(nspace.name) == 0) {
+		//  	result = result.substring(0, nspace.name.length - 1);
+		//  }
+		return result;
 	}
 
     /**
@@ -33,7 +38,9 @@ public class Typescript.TypeReference {
 		if (this.type_ref.data_type == null) {
 			this.signature.append_keyword ("void");
 		} else if (this.type_ref.data_type is Valadoc.Api.Symbol) {
-			this.signature.append_type ((Valadoc.Api.Symbol) this.type_ref.data_type);
+			
+			this.signature.append (this.type_ref.data.to_string()); // => Gtk.Widget
+			// this.signature.append_type ((Valadoc.Api.Symbol) this.type_ref.data_type);  // => Widget
 		} else {
 			this.signature.append_content (@"TODO $(this.type_ref.data_type.get_type())" /*this.type_ref.data_type.signature*/);
 		}
