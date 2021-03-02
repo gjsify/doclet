@@ -13,6 +13,12 @@ sources = files(
   'src/writer.vala',
   'src/generator.vala',
   'src/utils.vala',
+  'src/signaturebuilder.vala',
+  'src/class.vala',
+  'src/interface.vala',
+  'src/parameter.vala',
+  'src/typeparameter.vala',
+  'src/typereference.vala',
 )
 
 valac = meson.get_compiler('vala')
@@ -30,12 +36,3 @@ dependencies = [
 
 
 lib = shared_library('doclet', sources, dependencies: dependencies)
-
-# pkg = import('pkgconfig')
-# pkg.generate(
-#   version: meson.project_version(),
-#   libraries: lib,
-#   description: 'doclet for typescript types',
-#   name: 'doclet',
-#   filebase: 'doclet'
-# )

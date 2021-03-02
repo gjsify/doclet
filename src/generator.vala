@@ -30,7 +30,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	private Valadoc.Settings settings;
 	private Api.Tree current_tree;
 
-	private Class current_class;
+	// private Valadoc.Api.Class current_class;
 
 	public bool execute (Valadoc.Settings settings, Valadoc.Api.Tree tree, Valadoc.ErrorReporter reporter) {
 		this.settings = settings;
@@ -109,19 +109,23 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 
 		cl.accept_all_children (this);
 
+		var ts_class = new Typescript.Class(cl);
+		var sig = ts_class.get_signature();
+		stdout.printf(@"Signatur: $(sig)\n");
+
 	
-		string path = GLib.Path.build_filename (this.settings.path);
-		string filepath = GLib.Path.build_filename (path, cl.package.name + ".d.ts");
+		//  string path = GLib.Path.build_filename (this.settings.path);
+		//  string filepath = GLib.Path.build_filename (path, cl.package.name + ".d.ts");
 
-		DirUtils.create_with_parents (path, 0777);
+		//  DirUtils.create_with_parents (path, 0777);
 
-		var writer = new Typescript.Writer (filepath, "a+");
-		if (!writer.open ()) {
-			reporter.simple_error ("Typescript", "unable to open '%s' for writing", writer.filename);
-			return;
-		}
+		//  var writer = new Typescript.Writer (filepath, "a+");
+		//  if (!writer.open ()) {
+		//  	reporter.simple_error ("Typescript", "unable to open '%s' for writing", writer.filename);
+		//  	return;
+		//  }
 
-		this.current_class = cl;
+		//  this.current_class = cl;
 
 		var abstract_methods = cl.get_children_by_types ({NodeType.METHOD}, false);
 		foreach (var m in abstract_methods) {
@@ -158,7 +162,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 */
 	public override void visit_property (Valadoc.Api.Property prop) {
 		// stdout.printf("visit_property: %s\n", (string) prop.name);
-		stdout.printf(@"$(prop.name), ");
+		// stdout.printf(@"$(prop.name), ");
 		prop.accept_all_children (this);
 	}
 
@@ -213,9 +217,9 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 		
 
 		if (!m.is_static && !m.is_constructor) {
-			stdout.printf(@"$(m.name) (");
+			// stdout.printf(@"$(m.name) (");
 			m.accept_all_children (this);
-			stdout.printf(@"): $(m.return_type.data.type_name)\n");
+			// stdout.printf(@"): $(m.return_type.data.type_name)\n");
 		}
 	}
 
@@ -227,7 +231,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	public override void visit_type_parameter (Valadoc.Api.TypeParameter param) {
 		// stdout.printf("visit_type_parameter: %s\n", (string) param.name);
 		if (param.name != null) {
-			stdout.printf(@" $(param.name): $(param.data.type_name), ");
+			// stdout.printf(@" $(param.data.type_name),");
 		}
 		
 		param.accept_all_children (this);
@@ -241,7 +245,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	public override void visit_formal_parameter (Valadoc.Api.Parameter param) {
 		// stdout.printf("visit_formal_parameter: %s\n", (string) param.name);
 		if (param.name != null) {
-			stdout.printf(@" $(param.name): $(param.parameter_type.data.type_name), ");
+			// stdout.printf(@" $(param.name): $(param.data.type_name)");
 		}
 		
 		param.accept_all_children (this);
@@ -291,11 +295,11 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 * Visit abstract methods
 	 */
 	private void visit_abstract_method (Valadoc.Api.Method m) {
-		stdout.printf(@"abstract $(m.name)");
+		// stdout.printf(@"abstract $(m.name)");
 		if (!m.is_static && !m.is_constructor) {
-			stdout.printf(@"$(m.name) (");
+			// stdout.printf(@"$(m.name) (");
 			m.accept_all_children (this);
-			stdout.printf(@"): $(m.return_type.data.type_name)\n");
+			// stdout.printf(@"): $(m.return_type.data.type_name)\n");
 		}
 	}
 
@@ -303,7 +307,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 * Visit abstract properties
 	 */
 	private void visit_abstract_property (Valadoc.Api.Property prop) {
-		stdout.printf("visit_abstract_property: %s\n", (string) prop.name);
+		// stdout.printf("visit_abstract_property: %s\n", (string) prop.name);
 		prop.accept_all_children (this);
 	}
 

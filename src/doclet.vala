@@ -25,10 +25,6 @@ public class Typescript.Doclet : Valadoc.Doclet, Object {
 		this.reporter = reporter;
 		this.tree = tree;
 
-		this.generator = new Typescript.Generator ();
-		if (!this.generator.execute (settings, tree, reporter)) {
-			return;
-		}
 		this.scangobj();
 
 		stdout.printf("settings:\n");
@@ -61,6 +57,11 @@ public class Typescript.Doclet : Valadoc.Doclet, Object {
 		stdout.printf("    gir_namespace: %s\n", settings.gir_namespace);
 		stdout.printf("    gir_version: %s\n", settings.gir_version);
 		stdout.printf("    use_svg_images: %s\n", settings.use_svg_images.to_string());
+
+		this.generator = new Typescript.Generator ();
+		if (!this.generator.execute (settings, tree, reporter)) {
+			return;
+		}
 	}
 
 	private bool scangobj () {
