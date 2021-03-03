@@ -11,7 +11,7 @@
     "build:meson": "meson builddir",
     "build:ninja": "ninja -C builddir",
     "types": "npm run update:submodules && npm run doc:gtk",
-    "doc:gtk": "valadoc --verbose --target-glib 2.98 --importdir girs --doclet \"./builddir\" -o \"./@types/\" \"/usr/share/vala-0.48/vapi/gtk+-3.0.vapi\" --vapidir \"/usr/share/vala-0.48/vapi\" --girdir \"girs/gir-1.0\" --use-svg-images -X --disable-devhelp --importdir \"girs/gir-1.0\" --import Gtk-3.0"
+    "doc:gtk": "valadoc --verbose --deps --target-glib 2.98 --importdir girs --doclet \"./builddir\" -o \"./@types/\" \"/usr/share/vala-0.48/vapi/gtk+-3.0.vapi\" --vapidir \"/usr/share/vala-0.48/vapi\" --girdir \"girs/gir-1.0\" --use-svg-images -X --disable-devhelp --importdir \"girs/gir-1.0\" --import Gtk-3.0"
   },
   "repository": {
     "type": "git",

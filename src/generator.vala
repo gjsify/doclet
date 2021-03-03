@@ -24,7 +24,21 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 */
 	public override void visit_tree (Valadoc.Api.Tree tree) {
 		tree.accept_children (this);
-		// stdout.printf("visit_tree: %s\n", (string) tree);
+		stdout.printf("visit_tree\n");
+
+		var packages = tree.get_package_list();
+
+		foreach (var package in packages) {
+
+			stdout.printf(@"tree package: $(package.name)\n");
+			stdout.printf(@"tree package get_full_name: $(package.get_full_name())\n");
+	
+			var ts_package = new Typescript.Package(package);
+			var signature = ts_package.get_signature();
+			stdout.printf(@"$(signature)\n");
+		}
+
+
 	}
 
 	/**
@@ -34,10 +48,6 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 */
 	public override void visit_package (Valadoc.Api.Package package) {
 		package.accept_all_children (this);
-
-		stdout.printf(@"visit_package: $(package.name)\n");
-		stdout.printf(@"visit_package get_full_name: $(package.get_full_name())\n");
-
 
 		//  string path = GLib.Path.build_filename (this.settings.path);
 		//  string filepath = GLib.Path.build_filename (path, package.name + ".d.ts");
@@ -86,11 +96,9 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 			}
 		}
 
-
 		var ts_iface = new Typescript.Interface(iface);
 		var sig = ts_iface.get_signature();
 		stdout.printf(@"$(sig)\n");
-
 	}
 
 	/**
@@ -118,7 +126,6 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 				visit_abstract_property ((Valadoc.Api.Property) prop);
 			}
 		}
-
 
 		var ts_class = new Typescript.Class(cl);
 		var sig = ts_class.get_signature();

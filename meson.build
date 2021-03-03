@@ -9,13 +9,15 @@ project('doclet', 'vala', 'c', version: '0.0.1')
 vala_args = ['-fPIC -w --debug -X -w']
 
 sources = files(
-  'src/signature/signaturebuilder.vala',
   'src/signature/class.vala',
+  'src/signature/dependency.vala',
   'src/signature/interface.vala',
   'src/signature/method.vala',
   'src/signature/namespace.vala',
+  'src/signature/package.vala',
   'src/signature/parameter.vala',
   'src/signature/property.vala',
+  'src/signature/signaturebuilder.vala',
   'src/signature/typeparameter.vala',
   'src/signature/typereference.vala',
   'src/doclet.vala',
