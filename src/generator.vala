@@ -1,19 +1,22 @@
 public class Typescript.Generator : Valadoc.Api.Visitor {
 
-	private Valadoc.ErrorReporter reporter;
+	private Typescript.Reporter reporter;
 	private Valadoc.Settings settings;
 	private Valadoc.Api.Tree current_tree;
+	private Vala.ArrayList<Typescript.Package> packages = new Vala.ArrayList<Typescript.Package> ();
+	private Typescript.Package current_package;
+	private Typescript.Package main_package;
 
 	// private Valadoc.Api.Class current_class;
 
-	public bool execute (Valadoc.Settings settings, Valadoc.Api.Tree tree, Valadoc.ErrorReporter reporter) {
+	public bool execute (Valadoc.Settings settings, Valadoc.Api.Tree tree, Typescript.Reporter reporter) {
 		this.settings = settings;
 		this.reporter = reporter;
 		this.current_tree = tree;
 
 		tree.accept (this);
 
-		// stdout.printf("execute: %s\n", (string) this.settings);
+		// this.reporter.simple_note("execute", "execute: %s\n", (string) this.settings);
 		return true;
 	}
 
@@ -24,19 +27,18 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 */
 	public override void visit_tree (Valadoc.Api.Tree tree) {
 		tree.accept_children (this);
-		stdout.printf("visit_tree\n");
+		this.reporter.simple_note("visit_tree", "visit_tree\n");
 
-		var packages = tree.get_package_list();
+		//  var packages = tree.get_package_list();
+		//  foreach (var package in packages) {
 
-		foreach (var package in packages) {
-
-			stdout.printf(@"tree package: $(package.name)\n");
-			stdout.printf(@"tree package get_full_name: $(package.get_full_name())\n");
+		//  	this.reporter.simple_note("visit_tree", @"tree package: $(package.name)\n");
+		//  	this.reporter.simple_note("visit_tree", @"tree package get_full_name: $(package.get_full_name())\n");
 	
-			var ts_package = new Typescript.Package(package);
-			var signature = ts_package.get_signature();
-			stdout.printf(@"$(signature)\n");
-		}
+		//  	var ts_package = new Typescript.Package(package);
+		//  	var signature = ts_package.get_signature();
+		//  	this.reporter.simple_note("visit_tree", @"$(signature)\n");
+		//  }
 
 
 	}
@@ -47,7 +49,18 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 * @param item a package
 	 */
 	public override void visit_package (Valadoc.Api.Package package) {
+		this.reporter.simple_note("visit_package START", package.name);
+		var ts_package = new Typescript.Package(package);
+
+		this.current_package = ts_package;
 		package.accept_all_children (this);
+	
+		if (settings.pkg_name != package.name) {
+			this.packages.add(this.current_package);
+		}
+		
+
+		// this.reporter.simple_note("visit_package END", package.get_full_name());
 
 		//  string path = GLib.Path.build_filename (this.settings.path);
 		//  string filepath = GLib.Path.build_filename (path, package.name + ".d.ts");
@@ -67,7 +80,29 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 * @param item a namespace
 	 */
 	public override void visit_namespace (Valadoc.Api.Namespace ns) {
+
+		if (!ns.is_browsable(this.settings)) {
+			return;
+		}
+
+		// Is global namespace?
+		if (ns.name == null)  {
+			ns.accept_all_children (this);
+			return;
+		}
+
+
+
+		this.reporter.simple_note("visit_namespace START", ns.get_full_name());
+		var ts_namespace = new Typescript.Namespace(ns);
+		this.current_package.ns = ts_namespace;
+
 		ns.accept_all_children (this);
+
+		if (ns != null && ns.get_full_name() != null) {
+			this.reporter.simple_note("visit_namespace START", ns.get_full_name());
+		}
+
 	}
 
 	/**
@@ -76,7 +111,10 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 * @param item a interface
 	 */
 	public override void visit_interface (Valadoc.Api.Interface iface) {
-		// stdout.printf("visit_interface: %s\n", (string) iface.name);
+		// this.reporter.simple_note("", "visit_interface: %s\n", (string) iface.name);
+
+		var ts_iface = new Typescript.Interface(iface);
+		this.current_package.ifaces.add(ts_iface);
 
 		iface.accept_all_children (this);
 
@@ -96,9 +134,9 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 			}
 		}
 
-		var ts_iface = new Typescript.Interface(iface);
-		var sig = ts_iface.get_signature();
-		stdout.printf(@"$(sig)\n");
+		//  var ts_iface = new Typescript.Interface(iface);
+		//  var sig = ts_iface.get_signature();
+		//  this.reporter.simple_note("visit_interface", @"$(sig)\n");
 	}
 
 	/**
@@ -107,7 +145,10 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 * @param item a class
 	 */
 	public override void visit_class (Valadoc.Api.Class cl) {
-		// stdout.printf("visit_class: %s\n", (string) cl.name);
+		// this.reporter.simple_note("visit_class", "visit_class: %s\n", (string) cl.name);
+
+		var ts_class = new Typescript.Class(cl);
+		this.current_package.classes.add(ts_class);
 
 		cl.accept_all_children (this);
 	
@@ -127,9 +168,9 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 			}
 		}
 
-		var ts_class = new Typescript.Class(cl);
-		var sig = ts_class.get_signature();
-		stdout.printf(@"$(sig)\n");
+		//  var ts_class = new Typescript.Class(cl);
+		//  var sig = ts_class.get_signature();
+		//  this.reporter.simple_note("visit_class", @"$(sig)\n");
 
 	}
 
@@ -139,7 +180,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 * @param item a struct
 	 */
 	public override void visit_struct (Valadoc.Api.Struct st) {
-		// stdout.printf("visit_struct: %s\n", (string) st.name);
+		// this.reporter.simple_note("visit_struct", "visit_struct: %s\n", (string) st.name);
 		st.accept_all_children (this);
 	}
 
@@ -149,8 +190,8 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 * @param item a property
 	 */
 	public override void visit_property (Valadoc.Api.Property prop) {
-		// stdout.printf("visit_property: %s\n", (string) prop.name);
-		// stdout.printf(@"$(prop.name), ");
+		// this.reporter.simple_note("visit_property", "visit_property: %s\n", (string) prop.name);
+		// this.reporter.simple_note("visit_property", @"$(prop.name), ");
 		prop.accept_all_children (this);
 	}
 
@@ -160,7 +201,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 * @param item a field
 	 */
 	public override void visit_field (Valadoc.Api.Field f) {
-		// stdout.printf("visit_field: %s\n", (string) f.name);
+		// this.reporter.simple_note("visit_field", "visit_field: %s\n", (string) f.name);
 		f.accept_all_children (this);
 	}
 
@@ -170,7 +211,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 * @param item a constant
 	 */
 	public override void visit_constant (Valadoc.Api.Constant cons) {
-		// stdout.printf("visit_constant: %s\n", (string) cons.name);
+		// this.reporter.simple_note("visit_constant", "visit_constant: %s\n", (string) cons.name);
 		cons.accept_all_children (this);
 	}
 
@@ -180,7 +221,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 * @param item a delegate
 	 */
 	public override void visit_delegate (Valadoc.Api.Delegate dele) {
-		// stdout.printf("visit_delegate: %s\n", (string) dele.name);
+		// this.reporter.simple_note("visit_delegate", "visit_delegate: %s\n", (string) dele.name);
 		dele.accept_children ({Valadoc.Api.NodeType.FORMAL_PARAMETER, Valadoc.Api.NodeType.TYPE_PARAMETER}, this);
 	}
 
@@ -190,7 +231,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 * @param item a signal
 	 */
 	public override void visit_signal (Valadoc.Api.Signal sig) {
-		// stdout.printf("visit_signal: %s\n", (string) sig.name);
+		// this.reporter.simple_note("visit_signal", "visit_signal: %s\n", (string) sig.name);
 		sig.accept_all_children (this);
 	}
 
@@ -200,14 +241,14 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 * @param item a method
 	 */
 	public override void visit_method (Valadoc.Api.Method m) {
-		// stdout.printf("visit_method: %s\n", (string) m.name);
+		// this.reporter.simple_note("visit_method", "visit_method: %s\n", (string) m.name);
 		// m.accept_children ({NodeType.FORMAL_PARAMETER, NodeType.TYPE_PARAMETER}, this);
 		
 
 		if (!m.is_static && !m.is_constructor) {
-			// stdout.printf(@"$(m.name) (");
+			// this.reporter.simple_note("visit_method", @"$(m.name) (");
 			m.accept_all_children (this);
-			// stdout.printf(@"): $(m.return_type.data.type_name)\n");
+			// this.reporter.simple_note("visit_method", @"): $(m.return_type.data.type_name)\n");
 		}
 	}
 
@@ -217,9 +258,9 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 * @param item a type parameter
 	 */
 	public override void visit_type_parameter (Valadoc.Api.TypeParameter param) {
-		// stdout.printf("visit_type_parameter: %s\n", (string) param.name);
+		// this.reporter.simple_note("visit_type_parameter", "visit_type_parameter: %s\n", (string) param.name);
 		if (param.name != null) {
-			// stdout.printf(@" $(param.data.type_name),");
+			// this.reporter.simple_note("visit_type_parameter", @" $(param.data.type_name),");
 		}
 		
 		param.accept_all_children (this);
@@ -231,9 +272,9 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 * @param item a parameter
 	 */
 	public override void visit_formal_parameter (Valadoc.Api.Parameter param) {
-		// stdout.printf("visit_formal_parameter: %s\n", (string) param.name);
+		// this.reporter.simple_note("visit_formal_parameter", "visit_formal_parameter: %s\n", (string) param.name);
 		if (param.name != null) {
-			// stdout.printf(@" $(param.name): $(param.data.type_name)");
+			// this.reporter.simple_note("visit_formal_parameter", @" $(param.name): $(param.data.type_name)");
 		}
 		
 		param.accept_all_children (this);
@@ -245,7 +286,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 * @param item a error domain
 	 */
 	public override void visit_error_domain (Valadoc.Api.ErrorDomain edomain) {
-		// stdout.printf("visit_error_domain: %s\n", (string) edomain.name);
+		// this.reporter.simple_note("visit_error_domain", "visit_error_domain: %s\n", (string) edomain.name);
 		edomain.accept_all_children (this);
 	}
 
@@ -255,7 +296,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 * @param item a error code
 	 */
 	public override void visit_error_code (Valadoc.Api.ErrorCode ecode) {
-		// stdout.printf("visit_error_code: %s\n", (string) ecode.name);
+		// this.reporter.simple_note("visit_error_code", "visit_error_code: %s\n", (string) ecode.name);
 		ecode.accept_all_children (this);
 	}
 
@@ -265,7 +306,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 * @param item a enum
 	 */
 	public override void visit_enum (Valadoc.Api.Enum en) {
-		// stdout.printf("visit_enum: %s\n", (string) en.name);
+		// this.reporter.simple_note("visit_enum", "visit_enum: %s\n", (string) en.name);
 		en.accept_all_children (this);
 	}
 
@@ -275,7 +316,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 * @param item a enum value
 	 */
 	public override void visit_enum_value (Valadoc.Api.EnumValue eval) {
-		// stdout.printf("visit_enum_value: %s\n", (string) eval.name);
+		// this.reporter.simple_note("visit_enum_value", "visit_enum_value: %s\n", (string) eval.name);
 		eval.accept_all_children (this);
 	}
 
@@ -283,11 +324,11 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 * Visit abstract methods
 	 */
 	private void visit_abstract_method (Valadoc.Api.Method m) {
-		// stdout.printf(@"abstract $(m.name)");
+		// this.reporter.simple_note("visit_abstract_method", @"abstract $(m.name)");
 		if (!m.is_static && !m.is_constructor) {
-			// stdout.printf(@"$(m.name) (");
+			// this.reporter.simple_note("visit_abstract_method", @"$(m.name) (");
 			m.accept_all_children (this);
-			// stdout.printf(@"): $(m.return_type.data.type_name)\n");
+			// this.reporter.simple_note("visit_abstract_method", @"): $(m.return_type.data.type_name)\n");
 		}
 	}
 
@@ -295,7 +336,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 * Visit abstract properties
 	 */
 	private void visit_abstract_property (Valadoc.Api.Property prop) {
-		// stdout.printf("visit_abstract_property: %s\n", (string) prop.name);
+		// this.reporter.simple_note("visit_abstract_property", "visit_abstract_property: %s\n", (string) prop.name);
 		prop.accept_all_children (this);
 	}
 

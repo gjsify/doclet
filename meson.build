@@ -9,20 +9,32 @@ project('doclet', 'vala', 'c', version: '0.0.1')
 vala_args = ['-fPIC -w --debug -X -w']
 
 sources = files(
+  'src/signature/array.vala',
+  'src/signature/attribute.vala',
   'src/signature/class.vala',
+  'src/signature/constant.vala',
+  'src/signature/delegate.vala',
   'src/signature/dependency.vala',
+  'src/signature/enum.vala',
+  'src/signature/enumvalue.vala',
+  'src/signature/errorcode.vala',
+  'src/signature/errordomain.vala',
+  'src/signature/field.vala',
   'src/signature/interface.vala',
   'src/signature/method.vala',
   'src/signature/namespace.vala',
   'src/signature/package.vala',
   'src/signature/parameter.vala',
   'src/signature/property.vala',
+  'src/signature/signal.vala',
   'src/signature/signaturebuilder.vala',
+  'src/signature/struct.vala',
   'src/signature/typeparameter.vala',
   'src/signature/typereference.vala',
   'src/doclet.vala',
   'src/writer.vala',
   'src/generator.vala',
+  'src/reporter.vala',
   'src/utils.vala',
 )
 

@@ -42,20 +42,20 @@ public class Typescript.TypeReference {
 			this.signature.append (this.type_ref.data.to_string()); // => Gtk.Widget
 			// this.signature.append_type ((Valadoc.Api.Symbol) this.type_ref.data_type);  // => Widget
 		} else {
-			this.signature.append_content (@"TODO $(this.type_ref.data_type.get_type())" /*this.type_ref.data_type.signature*/);
+			var ts_data_type = new Typescript.TypeReference (this.type_ref.data_type as Valadoc.Api.TypeReference);
+			this.signature.append_content (ts_data_type.get_signature());
 		}
 
 		var type_arguments = this.type_ref.get_type_arguments();
 		if (type_arguments.size > 0) {
 			this.signature.append ("<", false);
 			bool first = true;
-			foreach (Valadoc.Api.Item _param in type_arguments) {
-				var param  = (Valadoc.Api.TypeReference) _param;
-				var ts_param = new TypeReference(param);
+			foreach (Valadoc.Api.Item type_arg in type_arguments) {
+				var ts_type_arg = new TypeReference(type_arg as Valadoc.Api.TypeReference);
 				if (!first) {
 					this.signature.append (",", false);
 				}
-				this.signature.append_content (ts_param.build_signature(), false);
+				this.signature.append_content (ts_type_arg.build_signature(), false);
 				first = false;
 			}
 			this.signature.append (">", false);

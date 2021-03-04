@@ -1,5 +1,5 @@
 public class Typescript.Namespace {
-    protected Valadoc.Api.Namespace nspace;
+    public Valadoc.Api.Namespace nspace;
 	protected Typescript.SignatureBuilder signature = new Typescript.SignatureBuilder ();
 
     public Namespace (Valadoc.Api.Namespace nspace) {

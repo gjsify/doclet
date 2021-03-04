@@ -6,7 +6,7 @@
 
 public class Typescript.Doclet : Valadoc.Doclet, Object {
  
-	private Valadoc.ErrorReporter reporter;
+	private Typescript.Reporter reporter;
 	private Valadoc.Settings settings;
 	private Valadoc.Api.Tree tree;
 	private Typescript.Generator generator;
@@ -22,53 +22,53 @@ public class Typescript.Doclet : Valadoc.Doclet, Object {
 	 */
 	public void process (Valadoc.Settings settings, Valadoc.Api.Tree tree, Valadoc.ErrorReporter reporter) {
 		this.settings = settings;
-		this.reporter = reporter;
+		this.reporter = new Typescript.Reporter(settings);
 		this.tree = tree;
 
 		this.scangobj();
 
-		stdout.printf("settings:\n");
-		stdout.printf("    path: %s\n", settings.path);
-		stdout.printf("    pkg_name: %s\n", settings.pkg_name);
-		stdout.printf("    pkg_version: %s\n", settings.pkg_version);
-		stdout.printf("    wiki_directory: %s\n", settings.wiki_directory);
-		// stdout.printf("    pluginargs: %s\n", settings.pluginargs);
-		stdout.printf("    private: %s\n", settings._private.to_string());
-		stdout.printf("    protected: %s\n", settings._protected.to_string());
-		stdout.printf("    internal: %s\n", settings._internal.to_string());
-		stdout.printf("    with_deps: %s\n", settings.with_deps.to_string());
-		stdout.printf("    add_inherited: %s\n", settings.add_inherited.to_string());
-		stdout.printf("    verbose: %s\n", settings.verbose.to_string());
-		stdout.printf("    experimental: %s\n", settings.experimental.to_string());
-		stdout.printf("    experimental_non_null: %s\n", settings.experimental_non_null.to_string());
-		// stdout.printf("    profile: %s\n", settings.profile);
-		stdout.printf("    basedir: %s\n", settings.basedir);
-		stdout.printf("    directory: %s\n", settings.directory);
-		// stdout.printf("    defines: %s\n", settings.defines);
-		// stdout.printf("    vapi_directories: %s\n", settings.vapi_directories);
-		// stdout.printf("    packages: %s\n", settings.packages);
-		// stdout.printf("    source_files: %s\n", settings.source_files);
-		// stdout.printf("    gir_directory: %s\n", settings.gir_directory);
-		stdout.printf("    gir_name: %s\n", settings.gir_name);
-		// stdout.printf("    metadata_directories: %s\n", settings.metadata_directories);
-		// stdout.printf("    alternative_resource_dirs: %s\n", settings.alternative_resource_dirs);
-		// stdout.printf("    gir_directories: %s\n", settings.gir_directories);
-		stdout.printf("    target_glib: %s\n", settings.target_glib);
-		stdout.printf("    gir_namespace: %s\n", settings.gir_namespace);
-		stdout.printf("    gir_version: %s\n", settings.gir_version);
-		stdout.printf("    use_svg_images: %s\n", settings.use_svg_images.to_string());
-
 		this.generator = new Typescript.Generator ();
-		if (!this.generator.execute (settings, tree, reporter)) {
+		if (!this.generator.execute (settings, tree, this.reporter)) {
 			return;
 		}
+
+		this.reporter.simple_note("doclet process", @"    path: $(settings.path)");
+		this.reporter.simple_note("doclet process", @"    pkg_name: $(settings.pkg_name)");
+		this.reporter.simple_note("doclet process", @"    pkg_version: $(settings.pkg_version != null ? settings.pkg_version : "")");
+		this.reporter.simple_note("doclet process", @"    wiki_directory: $(settings.wiki_directory != null ? settings.wiki_directory : "")");
+		// this.reporter.simple_note("doclet process", @"    pluginargs: $(settings.pluginargs)");
+		this.reporter.simple_note("doclet process", @"    private: $(settings._private)");
+		this.reporter.simple_note("doclet process", @"    protected: $(settings._protected)");
+		this.reporter.simple_note("doclet process", @"    internal: $(settings._internal)");
+		this.reporter.simple_note("doclet process", @"    with_deps: $(settings.with_deps)");
+		this.reporter.simple_note("doclet process", @"    add_inherited: $(settings.add_inherited)");
+		this.reporter.simple_note("doclet process", @"    verbose: $(settings.verbose)");
+		this.reporter.simple_note("doclet process", @"    experimental: $(settings.experimental)");
+		this.reporter.simple_note("doclet process", @"    experimental_non_null: $(settings.experimental_non_null)");
+		this.reporter.simple_note("doclet process", @"    profile: $(settings.profile != null ? settings.profile : "")");
+		this.reporter.simple_note("doclet process", @"    basedir: $(settings.basedir != null ? settings.basedir : "")");
+		this.reporter.simple_note("doclet process", @"    directory: $(settings.directory)");
+		// this.reporter.simple_note("doclet process", @"    defines: $(settings.defines)");
+		// this.reporter.simple_note("doclet process", @"    vapi_directories: $(settings.vapi_directories)");
+		// this.reporter.simple_note("doclet process", @"    packages: $(settings.packages)");
+		// this.reporter.simple_note("doclet process", @"    source_files: $(settings.source_files)");
+		// this.reporter.simple_note("doclet process", @"    gir_directory: $(settings.gir_directory)");
+		this.reporter.simple_note("doclet process", @"    gir_name: $(settings.gir_name != null ? settings.gir_name : "")");
+		// this.reporter.simple_note("doclet process", @"    metadata_directories: $(settings.metadata_directories)");
+		// this.reporter.simple_note("doclet process", @"    alternative_resource_dirs: $(settings.alternative_resource_dirs)");
+		// this.reporter.simple_note("doclet process", @"    gir_directories: $(settings.gir_directories)");
+		this.reporter.simple_note("doclet process", @"    target_glib: $(settings.target_glib != null ? settings.target_glib : "")");
+		this.reporter.simple_note("doclet process", @"    gir_namespace: $(settings.gir_namespace != null ? settings.gir_namespace : "")");
+		this.reporter.simple_note("doclet process", @"    gir_version: $(settings.gir_version != null ? settings.gir_version : "")");
+		this.reporter.simple_note("doclet process", @"    use_svg_images: $(settings.use_svg_images)");
+
 	}
 
 	private bool scangobj () {
 		foreach (var package in this.tree.get_package_list()) {
 			if (package.is_package && package_exists (package.name, reporter)) {
 				// pc += package.name;
-				stdout.printf("scangobj package: %s\n", package.name);
+				this.reporter.simple_note("scangobj", @"package: $(package.name)");
 			}
 		}
 		return true;

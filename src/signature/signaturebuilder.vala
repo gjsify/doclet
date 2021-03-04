@@ -10,6 +10,10 @@ public class Typescript.SignatureBuilder {
 		return this.content.str;
 	}
 
+	public string get () {
+		return this.to_string();
+	}
+
 	private void append_text (string text) {
 		this.last_appended = text;
 		this.content.append(last_appended);

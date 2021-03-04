@@ -50,9 +50,8 @@ public class Typescript.Method {
 		if (type_parameters.size > 0) {
 			this.signature.append ("<", false);
 			bool first = true;
-			foreach (Valadoc.Api.Item _param in type_parameters) {
-				var param = (Valadoc.Api.TypeParameter) _param;
-				var ts_param = new Typescript.TypeParameter(param);
+			foreach (Valadoc.Api.Item param in type_parameters) {
+				var ts_param = new Typescript.TypeParameter(param as Valadoc.Api.TypeParameter);
 				if (!first) {
 					this.signature.append (",", false);
 				}
@@ -65,9 +64,8 @@ public class Typescript.Method {
 		this.signature.append ("(");
 
 		bool first = true;
-		foreach (Valadoc.Api.Node _param in this.m.get_children_by_type (Valadoc.Api.NodeType.FORMAL_PARAMETER, false)) {
-			var param = (Valadoc.Api.Parameter) _param;
-			var ts_param = new Typescript.Parameter(param);
+		foreach (Valadoc.Api.Node param in this.m.get_children_by_type (Valadoc.Api.NodeType.FORMAL_PARAMETER, false)) {
+			var ts_param = new Typescript.Parameter(param as Valadoc.Api.Parameter);
 			if (!first) {
 				this.signature.append (",", false);
 			}
@@ -82,10 +80,7 @@ public class Typescript.Method {
 		//
 		if (!this.m.is_constructor) {
 			this.signature.append (":", false);
-
-			var return_type = (Valadoc.Api.TypeReference) this.m.return_type;
-			var ts_return_type = new Typescript.TypeReference(return_type);
-
+			var ts_return_type = new Typescript.TypeReference(this.m.return_type as Valadoc.Api.TypeReference);
 			this.signature.append_content (ts_return_type.get_signature());
 		}
 

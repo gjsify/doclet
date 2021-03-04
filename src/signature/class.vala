@@ -58,8 +58,7 @@ public class Typescript.Class {
 			this.signature.append ("extends");
 
 			var base_type = (Valadoc.Api.TypeReference) this.cl.base_type;
-			var ts_base_type = new Typescript.TypeReference(base_type /*, this.cl.nspace*/);
-
+			var ts_base_type = new Typescript.TypeReference(base_type);
 
 			this.signature.append_content (ts_base_type.get_signature());
 			first = false;
@@ -92,10 +91,29 @@ public class Typescript.Class {
 		// Properties
 		//
 		var properties = cl.get_children_by_types ({Valadoc.Api.NodeType.PROPERTY}, false);
-		foreach (var _prop in properties) {
-			var prop = (Valadoc.Api.Property) _prop;
-			var ts_prop = new Typescript.Property(prop); 
+		foreach (var prop in properties) {
+			var ts_prop = new Typescript.Property(prop as Valadoc.Api.Property); 
 			this.signature.append_content (ts_prop.get_signature());
+			this.signature.append ("\n", false);
+		}
+
+		//
+		// Constructors
+		//
+		var constructors = cl.get_children_by_types ({Valadoc.Api.NodeType.CREATION_METHOD}, false);
+		foreach (var constr in constructors) {
+			var ts_constr = new Typescript.Method(constr as Valadoc.Api.Method); 
+			this.signature.append_content (ts_constr.get_signature());
+			this.signature.append ("\n", false);
+		}
+
+		//
+		// Static Methods
+		//
+		var static_methods = cl.get_children_by_types ({Valadoc.Api.NodeType.STATIC_METHOD}, false);
+		foreach (var m in static_methods) {
+			var ts_m = new Typescript.Method(m as Valadoc.Api.Method); 
+			this.signature.append_content (ts_m.get_signature());
 			this.signature.append ("\n", false);
 		}
 
@@ -103,10 +121,39 @@ public class Typescript.Class {
 		// Methods
 		//
 		var methods = cl.get_children_by_types ({Valadoc.Api.NodeType.METHOD}, false);
-		foreach (var _m in methods) {
-			var m = (Valadoc.Api.Method) _m;
-			var ts_m = new Typescript.Method(m); 
+		foreach (var m in methods) {
+			var ts_m = new Typescript.Method(m as Valadoc.Api.Method); 
 			this.signature.append_content (ts_m.get_signature());
+			this.signature.append ("\n", false);
+		}
+
+		//
+		// Delegate
+		//
+		var delegates = cl.get_children_by_types ({Valadoc.Api.NodeType.DELEGATE}, false);
+		foreach (var dele in delegates) {
+			var ts_dele = new Typescript.Delegate(dele as Valadoc.Api.Delegate); 
+			this.signature.append_content (ts_dele.get_signature());
+			this.signature.append ("\n", false);
+		}
+
+		//
+		// Enums
+		//
+		var enums = cl.get_children_by_types ({Valadoc.Api.NodeType.ENUM}, false);
+		foreach (var _enum in enums) {
+			var ts_enum = new Typescript.Enum(_enum as Valadoc.Api.Enum); 
+			this.signature.append_content (ts_enum.get_signature());
+			this.signature.append ("\n", false);
+		}
+
+		//
+		// Signals
+		//
+		var signals = cl.get_children_by_types ({Valadoc.Api.NodeType.SIGNAL}, false);
+		foreach (var sig in signals) {
+			var ts_sig = new Typescript.Enum(sig as Valadoc.Api.Enum); 
+			this.signature.append_content (ts_sig.get_signature());
 			this.signature.append ("\n", false);
 		}
 
