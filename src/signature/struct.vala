@@ -1,23 +1,14 @@
-public class Typescript.Struct {
+public class Typescript.Struct : Typescript.Signable {
     protected Valadoc.Api.Struct struc;
-	protected Typescript.SignatureBuilder signature = new Typescript.SignatureBuilder ();
 
     public Struct (Valadoc.Api.Struct struc) {
         this.struc = struc;
     }
 
-	public string get_signature() {
-		if (this.signature.to_string().length <= 0) {
-			return build_signature();
-		} else {
-			return this.signature.to_string();
-		}
-	}
-
     /**
      * Basesd on libvaladoc/api/struct.vala
      */
-	 protected string build_signature () {
+	 protected override string build_signature () {
 		this.signature
 		.append_keyword (this.struc.accessibility.to_string ());
 		this.signature.append_keyword ("struct");

@@ -1,4 +1,5 @@
 # Typescript Doclet
+
 Experimental Valadoc Doclet to generate Typescript Definition files for Gjs and node-gtk.
 
 ## Valadoc Api Reference
@@ -43,6 +44,7 @@ npm run build
 ```
 
 And build the Typescript Type Definition files:
+
 ```bash
 npm run types
 ```
@@ -61,3 +63,7 @@ On my machine (Ubuntu) I still had to add the new compiled shared libraries to t
 sudo echo "/usr/local/lib/" >> /etc/ld.so.conf.d/vala.conf
 sudo ldconfig
 ```
+
+## See also
+
+* https://gitlab.gnome.org/GNOME/gobject-introspection/-/blob/master/giscanner/docwriter.py#L1116

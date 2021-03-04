@@ -1,23 +1,14 @@
-public class Typescript.Property {
+public class Typescript.Property : Typescript.Signable {
     protected Valadoc.Api.Property prop;
-	protected Typescript.SignatureBuilder signature = new Typescript.SignatureBuilder ();
 
     public Property (Valadoc.Api.Property prop) {
         this.prop = prop;
     }
 
-	public string get_signature() {
-		if (this.signature.to_string().length <= 0) {
-			return build_signature();
-		} else {
-			return this.signature.to_string();
-		}
-	}
-
     /**
      * Basesd on libvaladoc/api/property.vala
      */
-	 protected string build_signature () {
+	 protected override string build_signature () {
 		this.signature.append_keyword (this.prop.accessibility.to_string ());
 		if (this.prop.is_abstract) {
 			this.signature.append_keyword ("abstract");

@@ -26,6 +26,7 @@ sources = files(
   'src/signature/package.vala',
   'src/signature/parameter.vala',
   'src/signature/property.vala',
+  'src/signature/signable.vala',
   'src/signature/signal.vala',
   'src/signature/signaturebuilder.vala',
   'src/signature/struct.vala',
@@ -40,8 +41,8 @@ sources = files(
 
 valac = meson.get_compiler('vala')
 libvala_version = run_command(valac, '--api-version').stdout().strip()
-libvala = dependency('libvala-@0@'.format(libvala_version), version: '>= 0.51.0')
-valadoc = dependency('valadoc-@0@'.format(libvala_version), version: '>= 0.51.0')
+libvala = dependency('libvala-@0@'.format(libvala_version))
+valadoc = dependency('valadoc-@0@'.format(libvala_version))
 
 dependencies = [
   dependency('glib-2.0'),

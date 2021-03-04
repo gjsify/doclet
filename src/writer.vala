@@ -18,6 +18,10 @@ public class Typescript.Writer {
 		stream = null;
 	}
 
+	public void write (string line) {
+		stream.puts (line);
+	}
+
 	public void write_line (string line) {
 		stream.puts (line);
 		stream.putc ('\n');

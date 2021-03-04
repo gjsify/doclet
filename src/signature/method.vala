@@ -1,23 +1,14 @@
-public class Typescript.Method {
+public class Typescript.Method : Typescript.Signable {
     protected Valadoc.Api.Method m;
-	protected Typescript.SignatureBuilder signature = new Typescript.SignatureBuilder ();
 
     public Method (Valadoc.Api.Method m) {
         this.m = m;
     }
 
-	public string get_signature() {
-		if (this.signature.to_string().length <= 0) {
-			return build_signature();
-		} else {
-			return this.signature.to_string();
-		}
-	}
-
     /**
      * Basesd on libvaladoc/api/Method.vala
      */
-	 protected string build_signature () {
+	 protected override string build_signature () {
 		this.signature.append_keyword (this.m.accessibility.to_string ());
 
 		// TODO comments builder
@@ -31,12 +22,12 @@ public class Typescript.Method {
 			} else if (this.m.is_abstract) {
 				this.signature.append_keyword ("abstract");
 			} else if (this.m.is_override) {
-				this.signature.append_keyword ("override");
+				this.signature.append_keyword ("/* override */");
 			} else if (this.m.is_virtual) {
-				this.signature.append_keyword ("virtual");
+				this.signature.append_keyword ("/* virtual */");
 			}
 			if (this.m.is_inline) {
-				this.signature.append_keyword ("inline");
+				this.signature.append_keyword ("/* inline */");
 			}
 		}
 
@@ -44,7 +35,11 @@ public class Typescript.Method {
 			this.signature.append_keyword ("async");
 		}
 
-		this.signature.append_symbol (this.m);
+		if (this.m.is_virtual) {
+			this.signature.append ("vfunc_" + this.m.name);
+		} else {
+			this.signature.append (this.m.name);
+		}
 
 		var type_parameters = this.m.get_children_by_type (Valadoc.Api.NodeType.TYPE_PARAMETER, false);
 		if (type_parameters.size > 0) {
@@ -86,6 +81,7 @@ public class Typescript.Method {
 
 		var exceptions = this.m.get_children_by_types ({Valadoc.Api.NodeType.ERROR_DOMAIN, Valadoc.Api.NodeType.CLASS});
 		if (exceptions.size > 0) {
+			signature.append ("/*");
 			signature.append_keyword ("throws");
 			first = true;
 			foreach (Valadoc.Api.Node param in exceptions) {
@@ -95,7 +91,10 @@ public class Typescript.Method {
 				signature.append_type (param);
 				first = false;
 			}
+			signature.append ("*/");
 		}
+
+		this.signature.append (";", false);
 
 		return this.signature.to_string();
 	}

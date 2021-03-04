@@ -40,9 +40,7 @@ public class Typescript.SignatureBuilder {
 	 * @return this
 	 */
 	public unowned SignatureBuilder append_attribute (string text, bool spaced = true) {
-		string content = (last_appended != null && spaced ? " " : "") + text;
-		append_text (content);
-		return this;
+		return this.append(text, spaced);
 	}
 
 	/**
@@ -53,11 +51,25 @@ public class Typescript.SignatureBuilder {
 	 * @return this
 	 */
 	public unowned SignatureBuilder append_content (string content, bool spaced = true) {
-		if (last_appended != null && spaced) {
-			this.append_text (" ");
+		return this.append(content, spaced);
+	}
+
+	/**
+	 * Adds a with new line onto the end of the builder.
+	 *
+	 * @param content a content
+	 * @param spaced add a space at the front of the inline if necessary
+	 * @return this
+	 */
+	 public unowned SignatureBuilder append_line (string content) {
+		string new_line;
+		if(this.last_appended.last_index_of_char('\n') == this.last_appended.length) {
+			new_line = "\n" + content + "\n";
+		} else {
+			new_line = content;
 		}
-		this.append_text (last_appended = content);
-		return this;
+		
+		return this.append(new_line, false);
 	}
 
 	/**
@@ -68,7 +80,7 @@ public class Typescript.SignatureBuilder {
 	 * @return this
 	 */
 	public unowned SignatureBuilder append_keyword (string keyword, bool spaced = true) {
-		return this.append_content (keyword, spaced);
+		return this.append(keyword, spaced);
 	}
 
 	/**
@@ -79,7 +91,7 @@ public class Typescript.SignatureBuilder {
 	 * @return this
 	 */
 	public unowned SignatureBuilder append_symbol (Valadoc.Api.Node node, bool spaced = true) {
-		return this.append_content (node.name, spaced);
+		return this.append (node.name, spaced);
 	}
 
 	/**
@@ -90,7 +102,7 @@ public class Typescript.SignatureBuilder {
 	 * @return this
 	 */
 	public unowned SignatureBuilder append_type (Valadoc.Api.Node node, bool spaced = true) {
-		return append_content (node.name, spaced);
+		return this.append (node.name, spaced);
 	}
 
 	/**
@@ -101,7 +113,7 @@ public class Typescript.SignatureBuilder {
 	 * @return this
 	 */
 	public unowned SignatureBuilder append_type_name (string name, bool spaced = true) {
-		return append_content (name, spaced);
+		return this.append (name, spaced);
 	}
 
 	/**
@@ -112,6 +124,6 @@ public class Typescript.SignatureBuilder {
 	 * @return this
 	 */
 	public unowned SignatureBuilder append_literal (string literal, bool spaced = true) {
-		return append_content (literal, spaced);
+		return this.append (literal, spaced);
 	}
 }

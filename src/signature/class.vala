@@ -1,22 +1,14 @@
-public class Typescript.Class {
+public class Typescript.Class : Typescript.Signable {
     protected Valadoc.Api.Class cl;
-	protected Typescript.SignatureBuilder signature = new Typescript.SignatureBuilder ();
 
     public Class (Valadoc.Api.Class cl) {
         this.cl = cl;
     }
 
-	public string get_signature() {
-		if (this.signature.to_string().length <= 0) {
-			return build_signature();
-		}
-		return this.signature.to_string();
-	}
-
     /**
      * Basesd on libvaladoc/api/class.vala
      */
-	protected string build_signature () {
+	protected override string build_signature () {
 
 		var accessibility = this.cl.accessibility.to_string (); // "public" or "private"
 		
@@ -25,11 +17,13 @@ public class Typescript.Class {
 		this.signature.append(" * @" + accessibility + "\n", false);
 		this.signature.append(" */\n", false);
 
+		this.signature.append ("export");
+
 		if (this.cl.is_abstract) {
 			this.signature.append_keyword ("abstract");
 		}
 		if (this.cl.is_sealed) {
-			this.signature.append_keyword ("sealed");
+			this.signature.append_keyword ("/* sealed */");
 		}
 		this.signature.append_keyword ("class");
 		this.signature.append_symbol (this.cl);
@@ -38,9 +32,8 @@ public class Typescript.Class {
 		if (type_parameters.size > 0) {
 			this.signature.append ("<", false);
 			bool first = true;
-			foreach (Valadoc.Api.Item _param in type_parameters) {
-				var param = (Valadoc.Api.TypeParameter) _param;
-				var ts_param = new Typescript.TypeParameter(param);
+			foreach (Valadoc.Api.Item param in type_parameters) {
+				var ts_param = new Typescript.TypeParameter(param as Valadoc.Api.TypeParameter);
 				if (!first) {
 					this.signature.append (",", false);
 				}
@@ -57,8 +50,7 @@ public class Typescript.Class {
 		if (this.cl.base_type != null) {
 			this.signature.append ("extends");
 
-			var base_type = (Valadoc.Api.TypeReference) this.cl.base_type;
-			var ts_base_type = new Typescript.TypeReference(base_type);
+			var ts_base_type = new Typescript.TypeReference(this.cl.base_type as Valadoc.Api.TypeReference);
 
 			this.signature.append_content (ts_base_type.get_signature());
 			first = false;
@@ -138,21 +130,11 @@ public class Typescript.Class {
 		}
 
 		//
-		// Enums
-		//
-		var enums = cl.get_children_by_types ({Valadoc.Api.NodeType.ENUM}, false);
-		foreach (var _enum in enums) {
-			var ts_enum = new Typescript.Enum(_enum as Valadoc.Api.Enum); 
-			this.signature.append_content (ts_enum.get_signature());
-			this.signature.append ("\n", false);
-		}
-
-		//
 		// Signals
 		//
 		var signals = cl.get_children_by_types ({Valadoc.Api.NodeType.SIGNAL}, false);
 		foreach (var sig in signals) {
-			var ts_sig = new Typescript.Enum(sig as Valadoc.Api.Enum); 
+			var ts_sig = new Typescript.Signal(sig as Valadoc.Api.Signal); 
 			this.signature.append_content (ts_sig.get_signature());
 			this.signature.append ("\n", false);
 		}

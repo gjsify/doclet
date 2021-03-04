@@ -1,24 +1,14 @@
-public class Typescript.Interface {
+public class Typescript.Interface : Typescript.Signable {
     protected Valadoc.Api.Interface iface;
-
-	protected Typescript.SignatureBuilder signature = new Typescript.SignatureBuilder ();
 
     public Interface (Valadoc.Api.Interface iface) {
         this.iface = iface;
     }
 
-	public string get_signature() {
-		if (this.signature.to_string().length <= 0) {
-			return build_signature();
-		} else {
-			return this.signature.to_string();
-		}
-	}
-
-     /**
+    /**
      * Basesd on libvaladoc/api/interface.vala
      */
-	 public string build_signature () {
+	 public override string build_signature () {
 
 		var accessibility = this.iface.accessibility.to_string (); // "public" or "private"
 
@@ -27,6 +17,8 @@ public class Typescript.Interface {
 		this.signature.append(" * @" + accessibility + "\n", false);
 		this.signature.append(" */\n", false);
 
+		this.signature.append ("export");
+		// this.signature.append_keyword ("abstract class");
 		this.signature.append_keyword ("interface");
 		this.signature.append_symbol (this.iface);
 

@@ -1,23 +1,14 @@
-public class Typescript.Signal {
+public class Typescript.Signal : Typescript.Signable {
     protected Valadoc.Api.Signal sig;
-	protected Typescript.SignatureBuilder signature = new Typescript.SignatureBuilder ();
 
     public Signal (Valadoc.Api.Signal sig) {
         this.sig = sig;
     }
 
-	public string get_signature() {
-		if (this.signature.to_string().length <= 0) {
-			return build_signature();
-		} else {
-			return this.signature.to_string();
-		}
-	}
-
     /**
      * Basesd on libvaladoc/api/signal.vala
      */
-	 protected string build_signature () {
+	 protected override string build_signature () {
 		this.signature.append_keyword (this.sig.accessibility.to_string ());
 		if (this.sig.is_virtual) {
 			signature.append_keyword ("virtual");

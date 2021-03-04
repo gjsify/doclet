@@ -1,27 +1,21 @@
-public class Typescript.Enum {
+public class Typescript.Enum : Typescript.Signable {
     protected Valadoc.Api.Enum _enum;
-	protected Typescript.SignatureBuilder signature = new Typescript.SignatureBuilder ();
 
     public Enum (Valadoc.Api.Enum _enum) {
         this._enum = _enum;
     }
 
-	public string get_signature() {
-		if (this.signature.to_string().length <= 0) {
-			return build_signature();
-		} else {
-			return this.signature.to_string();
-		}
-	}
-
     /**
      * Basesd on libvaladoc/api/enum.vala
      */
-	 protected string build_signature () {
+	 protected override string build_signature () {
+		if (this._enum.get_full_name() == null) {
+			return "";
+		}
 		return this.signature
 		.append_keyword (this._enum.accessibility.to_string ())
 		.append_keyword ("enum")
-		.append_symbol (this._enum)
+		.append (this._enum.get_full_name())
 		.to_string();
 	}
 

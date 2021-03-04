@@ -1,23 +1,14 @@
-public class Typescript.Delegate {
+public class Typescript.Delegate : Typescript.Signable {
     protected Valadoc.Api.Delegate deleg;
-    protected Typescript.SignatureBuilder signature = new Typescript.SignatureBuilder ();
 
     public Delegate (Valadoc.Api.Delegate deleg) {
         this.deleg = deleg;
     }
 
-    public string get_signature () {
-        if (this.signature.to_string ().length <= 0) {
-            return build_signature ();
-        } else {
-            return this.signature.to_string ();
-        }
-    }
-
     /**
      * Basesd on libvaladoc/api/delegate.vala
      */
-    protected string build_signature () {
+    protected override string build_signature () {
 
         this.signature.append_keyword (this.deleg.accessibility.to_string ());
         this.signature.append_keyword ("delegate");

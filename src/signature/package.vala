@@ -1,6 +1,5 @@
-public class Typescript.Package {
+public class Typescript.Package : Typescript.Signable {
     public Valadoc.Api.Package package;
-	protected Typescript.SignatureBuilder signature = new Typescript.SignatureBuilder ();
 	
 	public Typescript.Namespace ns;
 	public string version;
@@ -16,14 +15,6 @@ public class Typescript.Package {
         this.package = package;
 		this.set_version();
     }
-
-	public string get_signature() {
-		if (this.signature.to_string().length <= 0) {
-			return build_signature();
-		} else {
-			return this.signature.to_string();
-		}
-	}
 
 	protected void set_version() {
 		if (this.ns == null) {
@@ -43,18 +34,33 @@ public class Typescript.Package {
      * Basesd on libvaladoc/api/package.vala
 	 * @note You need to passt "--deps" to valadoc to get dependencies, TODO not working?
      */
-	protected string build_signature () {
-		var dependencies = this.package.get_full_dependency_list(); // Or get_dependency_list
-		this.signature.append(@"dep length: $(dependencies.size)", false);
+	protected override string build_signature () {
+		foreach (var iface in this.ifaces) {
+			this.signature.append_line(iface.get_signature());
+		}
 
-		// DODO why is the size of dependencies 0?
-		foreach (var package in dependencies) {
-			var ts_dependency = new Typescript.Dependency(package);
-			if (package.is_package) {
-				this.signature.append(@"$(ts_dependency.get_signature())\n", false);
-			} else {
-				this.signature.append(@"$(ts_dependency.get_signature())\n", false);
-			}
+		foreach (var cls in this.classes) {
+			this.signature.append_line(cls.get_signature());
+		}
+
+		//  foreach (var constant in this.constants) {
+		//  	this.signature.append_line(constant.get_signature());
+		//  }
+
+		//  foreach (var enm in this.enums) {
+		//  	this.signature.append_line(enm.get_signature());
+		//  }
+
+		foreach (var strct in this.structs) {
+			this.signature.append_line(strct.get_signature());
+		}
+
+		foreach (var error_domain in this.error_domains) {
+			this.signature.append_line(error_domain.get_signature());
+		}
+
+		foreach (var func in this.functions) {
+			this.signature.append_line(func.get_signature());
 		}
 
 		return this.signature.to_string();
