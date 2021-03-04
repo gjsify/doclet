@@ -50,3 +50,14 @@ npm run types
 ## Visual Studio Code
 
 As a Typescript developer you don't want to code without autocompletion - [You also have that with Vala](https://wiki.gnome.org/Projects/Vala/Tools/VisualStudioCode).
+
+## Vala
+
+To use the latest Valadoc version follow the [compile and install instructions of Vala](https://gitlab.gnome.org/GNOME/vala).
+
+On my machine (Ubuntu) I still had to add the new compiled shared libraries to the Linux's [system library path](https://blog.andrewbeacock.com/2007/10/how-to-add-shared-libraries-to-linuxs.html):
+
+```bash
+sudo echo "/usr/local/lib/" >> /etc/ld.so.conf.d/vala.conf
+sudo ldconfig
+```

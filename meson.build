@@ -28,14 +28,15 @@ sources = files(
 
 valac = meson.get_compiler('vala')
 libvala_version = run_command(valac, '--api-version').stdout().strip()
-libvala = dependency('libvala-@0@'.format(libvala_version), version: '>= 0.48.7')
+libvala = dependency('libvala-@0@'.format(libvala_version), version: '>= 0.51.0')
+valadoc = dependency('valadoc-@0@'.format(libvala_version), version: '>= 0.51.0')
 
 dependencies = [
   dependency('glib-2.0'),
   dependency('gio-2.0'),
   dependency('gobject-2.0'),
   libvala,
-  dependency('valadoc-0.48'),
+  valadoc,
   valac.find_library('posix'),
 ]
 

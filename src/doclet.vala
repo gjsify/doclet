@@ -41,7 +41,7 @@ public class Typescript.Doclet : Valadoc.Doclet, Object {
 		stdout.printf("    verbose: %s\n", settings.verbose.to_string());
 		stdout.printf("    experimental: %s\n", settings.experimental.to_string());
 		stdout.printf("    experimental_non_null: %s\n", settings.experimental_non_null.to_string());
-		stdout.printf("    profile: %s\n", settings.profile);
+		// stdout.printf("    profile: %s\n", settings.profile);
 		stdout.printf("    basedir: %s\n", settings.basedir);
 		stdout.printf("    directory: %s\n", settings.directory);
 		// stdout.printf("    defines: %s\n", settings.defines);
