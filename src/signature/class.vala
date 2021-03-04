@@ -9,9 +9,8 @@ public class Typescript.Class {
 	public string get_signature() {
 		if (this.signature.to_string().length <= 0) {
 			return build_signature();
-		} else {
-			return this.signature.to_string();
 		}
+		return this.signature.to_string();
 	}
 
     /**
