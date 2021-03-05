@@ -106,3 +106,6 @@ dist
 # dist
 builddir
 @types
+
+# Subprojects
+subprojects/gxml

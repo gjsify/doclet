@@ -25,8 +25,6 @@ public class Typescript.Doclet : Valadoc.Doclet, Object {
 		this.reporter = new Typescript.Reporter(settings);
 		this.tree = tree;
 
-		this.scangobj();
-
 		this.generator = new Typescript.Generator ();
 		if (!this.generator.execute (settings, tree, this.reporter)) {
 			return;
@@ -62,16 +60,12 @@ public class Typescript.Doclet : Valadoc.Doclet, Object {
 		this.reporter.simple_note("doclet process", @"    gir_version: $(settings.gir_version != null ? settings.gir_version : "")");
 		this.reporter.simple_note("doclet process", @"    use_svg_images: $(settings.use_svg_images)");
 
-	}
-
-	private bool scangobj () {
 		foreach (var package in this.tree.get_package_list()) {
 			if (package.is_package && package_exists (package.name, reporter)) {
 				// pc += package.name;
 				this.reporter.simple_note("scangobj", @"package: $(package.name)");
 			}
 		}
-		return true;
 	}
 
 }

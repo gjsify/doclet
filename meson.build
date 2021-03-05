@@ -2,7 +2,7 @@
 # https://gitlab.gnome.org/GNOME/shotwell/-/blob/master/meson.build
 # https://wiki.gnome.org/Projects/Vala/Tools/Meson
 # https://github.com/benwaffle/vala-language-server/blob/master/meson.build
-
+# https://gitlab.gnome.org/GNOME/gxml/-/blob/master/README
 
 project('doclet', 'vala', 'c', version: '0.0.1')
 
@@ -33,21 +33,28 @@ sources = files(
   'src/signature/typeparameter.vala',
   'src/signature/typereference.vala',
   'src/doclet.vala',
-  'src/writer.vala',
   'src/generator.vala',
+  'src/girparser.vala',
   'src/reporter.vala',
   'src/utils.vala',
+  'src/writer.vala',
 )
 
 valac = meson.get_compiler('vala')
 libvala_version = run_command(valac, '--api-version').stdout().strip()
 libvala = dependency('libvala-@0@'.format(libvala_version))
 valadoc = dependency('valadoc-@0@'.format(libvala_version))
+gxml = dependency('gxml-0.18', fallback : [ 'gxml', 'libgxml_dep' ])
+
 
 dependencies = [
   dependency('glib-2.0'),
   dependency('gio-2.0'),
   dependency('gobject-2.0'),
+	dependency('libxml-2.0'),
+	dependency('gio-2.0'),
+	dependency('gee-0.8'),
+  gxml,
   libvala,
   valadoc,
   valac.find_library('posix'),
