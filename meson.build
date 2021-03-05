@@ -44,7 +44,7 @@ valac = meson.get_compiler('vala')
 libvala_version = run_command(valac, '--api-version').stdout().strip()
 libvala = dependency('libvala-@0@'.format(libvala_version))
 valadoc = dependency('valadoc-@0@'.format(libvala_version))
-gxml = dependency('gxml-0.18', fallback : [ 'gxml', 'libgxml_dep' ])
+gxml = dependency('gxml-0.21', fallback : [ 'gxml', 'libgxml_dep' ])
 
 
 dependencies = [

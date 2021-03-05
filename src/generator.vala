@@ -1,19 +1,18 @@
 public class Typescript.Generator : Valadoc.Api.Visitor {
 
-	private Typescript.Reporter reporter;
-	private Valadoc.Settings settings;
-	private Valadoc.Api.Tree current_tree;
-	private Vala.ArrayList<Typescript.Package> packages = new Vala.ArrayList<Typescript.Package> ();
-	private Typescript.Package current_package;
-	private Typescript.Package main_package;
-	private Typescript.Class current_class;
-	private Typescript.Interface current_interface;
+	protected Typescript.Reporter reporter;
+	protected Valadoc.Settings settings;
+	protected Valadoc.Api.Tree current_tree;
+	protected Typescript.Package current_main_package;
+	protected Typescript.Class current_class;
+	protected Typescript.Interface current_interface;
+	protected Typescript.GirParser gir_parser;
 
-
-	public bool execute (Valadoc.Settings settings, Valadoc.Api.Tree tree, Typescript.Reporter reporter) {
+	public bool execute (Valadoc.Settings settings, Valadoc.Api.Tree tree, Typescript.Reporter reporter, Typescript.GirParser gir_parser) {
 		this.settings = settings;
 		this.reporter = reporter;
 		this.current_tree = tree;
+		this.gir_parser = gir_parser;
 
 		tree.accept (this);
 
@@ -36,7 +35,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 		//  	this.reporter.simple_note("visit_tree", @"tree package: $(package.name)");
 		//  	this.reporter.simple_note("visit_tree", @"tree package get_full_name: $(package.get_full_name())");
 	
-		//  	var ts_package = new Typescript.Package(package);
+		//  	var ts_package = new Typescript.Package(this.settings, this.tree.context, this.gir_parser, package);
 		//  	var signature = ts_package.get_signature();
 		//  	this.reporter.simple_note("visit_tree", @"$(signature)");
 		//  }
@@ -50,47 +49,40 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 * @param item a package
 	 */
 	public override void visit_package (Valadoc.Api.Package package) {
+		if (package == null) {
+			return;
+		}
 		this.reporter.simple_note("visit_package START", package.name);
 
 		// Resets
 		this.current_class = null;
 		this.current_interface = null;
 
-		var ts_package = new Typescript.Package(package);
+		var ts_package = new Typescript.Package(this.settings, this.current_tree.context, this.gir_parser, package);
 
-		this.current_package = ts_package;
-
-		if (settings.pkg_name == package.name) {
-			this.main_package = ts_package;
+		if (ts_package.is_main()) {
+			this.current_main_package = ts_package;
 			package.accept_all_children (this);
 		}
 
-		if (settings.pkg_name != package.name) {
-			this.packages.add(this.current_package);
-		}
-		
-		// this.reporter.simple_note("visit_package END", package.get_full_name());
-
-		string path = GLib.Path.build_filename (this.settings.path);
-		string filepath = GLib.Path.build_filename (path, settings.pkg_name + ".d.ts");
-
-		DirUtils.create_with_parents (path, 0777);
-
-		var writer = new Typescript.Writer (filepath, "a+");
-		if (!writer.open ()) {
-			reporter.simple_error ("Typescript", "unable to open '%s' for writing", writer.filename);
-			return;
+		if (ts_package.is_dependency()) {
+			this.current_main_package.add_dependency(ts_package);
 		}
 
-		writer.write(this.main_package.get_signature());
+		this.reporter.simple_note("visit_package END", package.get_full_name());
 
-		//  var source = ts_package.package.get_source_file();
-		//  this.reporter.simple_note("visit_package package_name", source.data.package_name);
-		//  this.reporter.simple_note("visit_package get_csource_filename", source.data.get_csource_filename());
-		//  this.reporter.simple_note("visit_package installed_version", source.data.installed_version);
-		//  this.reporter.simple_note("visit_package gir_namespace", source.data.gir_namespace);
-		//  this.reporter.simple_note("visit_package gir_version", source.data.gir_version);
-		//  this.reporter.simple_note("visit_package file_type", source.data.file_type.to_string());
+		//  string path = GLib.Path.build_filename (this.settings.path);
+		//  string filepath = GLib.Path.build_filename (path, settings.pkg_name + ".d.ts");
+
+		//  DirUtils.create_with_parents (path, 0777);
+
+		//  var writer = new Typescript.Writer (filepath, "a+");
+		//  if (!writer.open ()) {
+		//  	reporter.simple_error ("Typescript", "unable to open '%s' for writing", writer.filename);
+		//  	return;
+		//  }
+
+		//  writer.write(this.main_package.get_signature());
 	}
 
 	/**
@@ -115,8 +107,11 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 		this.current_interface = null;
 
 		this.reporter.simple_note("visit_namespace START", ns.get_full_name());
+		this.reporter.simple_note("visit_namespace START", this.current_main_package.get_vala_namespace());
+
 		var ts_namespace = new Typescript.Namespace(ns);
-		this.current_package.ns = ts_namespace;
+		this.current_main_package.root_namespace = ts_namespace; // TODO
+		this.current_main_package.current_namespace = ts_namespace;
 
 		ns.accept_all_children (this);
 
@@ -132,12 +127,12 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 * @param item a interface
 	 */
 	public override void visit_interface (Valadoc.Api.Interface iface) {
-		this.reporter.simple_note("visit_interface", iface.get_full_name());
+		// this.reporter.simple_note("visit_interface", iface.get_full_name());
 
 		var ts_iface = new Typescript.Interface(iface);
 		this.current_interface = ts_iface;
 		this.current_class = null;
-		this.current_package.ifaces.add(ts_iface);
+		this.current_main_package.ifaces.add(ts_iface);
 
 		iface.accept_all_children (this);
 
@@ -173,7 +168,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 		var ts_class = new Typescript.Class(cl);
 		this.current_class = ts_class;
 		this.current_interface = null;
-		this.current_package.classes.add(ts_class);
+		this.current_main_package.classes.add(ts_class);
 
 		cl.accept_all_children (this);
 	
@@ -237,7 +232,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 */
 	public override void visit_constant (Valadoc.Api.Constant cons) {
 		var ts_cons = new Typescript.Constant(cons as Valadoc.Api.Constant); 
-		this.current_package.constants.add(ts_cons);
+		this.current_main_package.constants.add(ts_cons);
 		cons.accept_all_children (this);
 	}
 
@@ -292,7 +287,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	}
 
 	public void visit_constructor (Valadoc.Api.Method m) {
-		this.reporter.simple_note("visit_constructor", m.name);
+		// this.reporter.simple_note("visit_constructor", m.name);
 		m.accept_all_children (this);
 	}
 
@@ -300,9 +295,9 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	 * Global functions
 	 */
 	public void visit_function (Valadoc.Api.Method m) {
-		this.reporter.simple_note("visit_function", m.name);
+		// this.reporter.simple_note("visit_function", m.name);
 		var ts_m = new Typescript.Method(m as Valadoc.Api.Method); 
-		this.current_package.functions.add(ts_m);
+		this.current_main_package.functions.add(ts_m);
 		m.accept_all_children (this);
 
 	}
@@ -378,7 +373,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	/**
 	 * Visit abstract methods
 	 */
-	private void visit_abstract_method (Valadoc.Api.Method m) {
+	protected void visit_abstract_method (Valadoc.Api.Method m) {
 		// this.reporter.simple_note("visit_abstract_method", @"abstract $(m.name)");
 		if (!m.is_static && !m.is_constructor) {
 			// this.reporter.simple_note("visit_abstract_method", @"$(m.name) (");
@@ -390,7 +385,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 	/**
 	 * Visit abstract properties
 	 */
-	private void visit_abstract_property (Valadoc.Api.Property prop) {
+	protected void visit_abstract_property (Valadoc.Api.Property prop) {
 		// this.reporter.simple_note("visit_abstract_property", "visit_abstract_property: %s", (string) prop.name);
 		prop.accept_all_children (this);
 	}
