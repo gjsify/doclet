@@ -16,5 +16,6 @@
         "vala",
         "vapi",
         "vapidir"
-    ]
+    ],
+    "editor.formatOnSave": true
 }

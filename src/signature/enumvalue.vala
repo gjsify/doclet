@@ -5,24 +5,24 @@ public class Typescript.EnumValue : Typescript.Signable {
         this.e_val = e_val;
     }
 
-	public string get_default_value() {
-		var default_value = this.e_val.default_value;
-		return default_value.style.to_string() + " TODO";
-	}
+    public string get_default_value () {
+        var default_value = this.e_val.default_value;
+        return default_value.style.to_string () + " TODO";
+    }
 
     /**
      * Basesd on libvaladoc/api/enumvalue.vala
      */
-	 protected override string build_signature () {
-		this.signature.append_symbol (this.e_val);
+    protected override string build_signature (Typescript.Namespace ? root_namespace) {
+        var signature = new Typescript.SignatureBuilder ();
+        signature.append_symbol (this.e_val);
 
-		if (e_val.has_default_value) {
-			this.signature.append ("=");
+        if (e_val.has_default_value) {
+            signature.append ("=");
 
-			this.signature.append_content (this.get_default_value());
-		}
+            signature.append_content (this.get_default_value ());
+        }
 
-		return this.signature.to_string();
-	}
-
+        return signature.to_string ();
+    }
 }

@@ -8,9 +8,9 @@ public class Typescript.Dependency : Typescript.Signable {
     /**
      * Basesd on libvaladoc/api/packageeter.vala
      */
-	protected override string build_signature () {
-		this.signature.append(@"import type * as $(this.package.name) from './GLib-2.0'");
-		return this.signature.to_string();
-	}
-
+    protected override string build_signature (Typescript.Namespace ? root_namespace) {
+        var signature = new Typescript.SignatureBuilder ();
+        signature.append (@"import type * as $(this.package.name) from './GLib-2.0'");
+        return signature.to_string ();
+    }
 }

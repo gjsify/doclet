@@ -8,7 +8,8 @@ public class Typescript.Attribute : Typescript.Signable {
     /**
      * Basesd on libvaladoc/api/attribute.vala
      */
-    protected override string build_signature () {
+	protected override string build_signature (Typescript.Namespace? root_namespace) {
+        var signature = new Typescript.SignatureBuilder();
 
         var attr = (Vala.Attribute) this.attr.data;
 
@@ -22,14 +23,14 @@ public class Typescript.Attribute : Typescript.Signable {
 
         if (attr.name == "CCode" && keys.get_length () == 0) {
             // only cheader_filename on namespace
-            return this.signature.to_string ();
+            return signature.to_string ();
         }
 
-        this.signature.append_attribute ("[");
-        this.signature.append_type_name (attr.name);
+        signature.append_attribute ("[");
+        signature.append_type_name (attr.name);
 
         if (keys.get_length () > 0) {
-            this.signature.append_attribute ("(");
+            signature.append_attribute ("(");
 
             unowned string separator = "";
             var arg_iter = keys.get_begin_iter ();
@@ -37,20 +38,20 @@ public class Typescript.Attribute : Typescript.Signable {
                 unowned string arg_name = arg_iter.get ();
                 arg_iter = arg_iter.next ();
                 if (separator != "") {
-                    this.signature.append_attribute (", ");
+                    signature.append_attribute (", ");
                 }
                 if (arg_name != "cheader_filename") {
-                    this.signature.append_attribute (arg_name);
-                    this.signature.append_attribute ("=");
-                    this.signature.append_literal (attr.args.get (arg_name));
+                    signature.append_attribute (arg_name);
+                    signature.append_attribute ("=");
+                    signature.append_literal (attr.args.get (arg_name));
                 }
                 separator = ", ";
             }
 
-            this.signature.append_attribute (")");
+            signature.append_attribute (")");
         }
-        this.signature.append_attribute ("]");
+        signature.append_attribute ("]");
 
-        return this.signature.to_string ();
+        return signature.to_string ();
     }
 }

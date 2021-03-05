@@ -8,10 +8,10 @@ public class Typescript.ErrorCode : Typescript.Signable {
     /**
      * Basesd on libvaladoc/api/errorcode.vala
      */
-	 protected override string build_signature () {
-		return this.signature
-		.append_symbol (error_code)
-		.to_string();
-	}
-
+    protected override string build_signature (Typescript.Namespace ? root_namespace) {
+        var signature = new Typescript.SignatureBuilder ();
+        return signature
+                .append_symbol (error_code)
+                .to_string ();
+    }
 }

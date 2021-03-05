@@ -8,11 +8,11 @@ public class Typescript.ErrorDomain : Typescript.Signable {
     /**
      * Basesd on libvaladoc/api/errordomain.vala
      */
-	 protected override string build_signature () {
-		return this.signature.append_keyword (this.error_domain.accessibility.to_string ())
-		.append_keyword ("errordomain")
-		.append_symbol (this.error_domain)
-		.to_string ();
-	}
-
+    protected override string build_signature (Typescript.Namespace ? root_namespace) {
+        var signature = new Typescript.SignatureBuilder ();
+        return signature.append_keyword (this.error_domain.accessibility.to_string ())
+                .append_keyword ("errordomain")
+                .append_symbol (this.error_domain)
+                .to_string ();
+    }
 }

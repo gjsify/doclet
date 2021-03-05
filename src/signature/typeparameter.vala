@@ -12,9 +12,9 @@ public class Typescript.TypeParameter : Typescript.Signable {
     /**
      * Basesd on libvaladoc/api/typeparameter.vala
      */
-	 protected override string build_signature () {
-		this.signature.append_symbol (this.type_param);
-		return this.signature.to_string();
-	}
-
+    protected override string build_signature (Typescript.Namespace ? root_namespace) {
+        var signature = new Typescript.SignatureBuilder ();
+        signature.append_symbol (this.type_param);
+        return signature.to_string ();
+    }
 }

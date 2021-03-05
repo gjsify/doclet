@@ -8,39 +8,39 @@ public class Typescript.Property : Typescript.Signable {
     /**
      * Basesd on libvaladoc/api/property.vala
      */
-	 protected override string build_signature () {
-		this.signature.append_keyword (this.prop.accessibility.to_string ());
-		if (this.prop.is_abstract) {
-			this.signature.append_keyword ("abstract");
-		} else if (this.prop.is_override) {
-			this.signature.append_keyword ("override");
-		} else if (this.prop.is_virtual) {
-			this.signature.append_keyword ("virtual");
-		}
+    protected override string build_signature (Typescript.Namespace ? root_namespace) {
+        var signature = new Typescript.SignatureBuilder ();
+        signature.append_keyword (this.prop.accessibility.to_string ());
+        if (this.prop.is_abstract) {
+            signature.append_keyword ("abstract");
+        } else if (this.prop.is_override) {
+            signature.append_keyword ("override");
+        } else if (this.prop.is_virtual) {
+            signature.append_keyword ("virtual");
+        }
 
-		// Write only
-		if (this.prop.getter == null && this.prop.setter != null) {
-			this.signature.append ("readonly");
-		}
+        // Write only
+        if (this.prop.getter == null && this.prop.setter != null) {
+            signature.append ("readonly");
+        }
 
-		// Read only
-		if (this.prop.getter != null && this.prop.setter == null) {
-			// TODO setter?
-		}
-
-
-		this.signature.append_symbol (this.prop);
-
-		this.signature.append (":", false);
-
-		var type = this.prop.property_type;
-		var ts_type = new Typescript.TypeReference(type); 
-		this.signature.append_content (ts_type.get_signature() /*this.prop.property_type.signature*/);
-
-		this.signature.append (";", false);
+        // Read only
+        if (this.prop.getter != null && this.prop.setter == null) {
+            // TODO setter?
+        }
 
 
-		return this.signature.to_string();
-	}
+        signature.append_symbol (this.prop);
 
+        signature.append (":", false);
+
+        var type = this.prop.property_type;
+        var ts_type = new Typescript.TypeReference (type);
+        signature.append_content (ts_type.get_signature (root_namespace) /*this.prop.property_type.signature*/);
+
+        signature.append (";", false);
+
+
+        return signature.to_string ();
+    }
 }
