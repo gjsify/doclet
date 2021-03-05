@@ -13,9 +13,7 @@ public class Typescript.Interface : Typescript.Signable {
      * Basesd on libvaladoc/api/interface.vala
      */
     public override string build_signature (Typescript.Namespace ? root_namespace) {
-        print ("build_signature");
         var signature = new Typescript.SignatureBuilder ();
-        print ("accessibility");
         var accessibility = this.iface.accessibility.to_string (); // "public" or "private"
 
         // TODO comments builder
@@ -28,8 +26,6 @@ public class Typescript.Interface : Typescript.Signable {
         signature.append_keyword ("interface");
         signature.append_symbol (this.iface);
 
-        print ("type_parameters");
-
         var type_parameters = this.iface.get_children_by_type (Valadoc.Api.NodeType.TYPE_PARAMETER, false);
         if (type_parameters.size > 0) {
             signature.append ("<", false);
@@ -37,7 +33,6 @@ public class Typescript.Interface : Typescript.Signable {
             foreach (Valadoc.Api.Item param in type_parameters) {
                 if (param is Valadoc.Api.TypeParameter) {
                     var ts_param = new Typescript.TypeParameter (param as Valadoc.Api.TypeParameter);
-                    print ("param " + ts_param.get_signature (root_namespace));
                     if (!first) {
                         signature.append (",", false);
                     }

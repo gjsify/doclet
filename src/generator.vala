@@ -3,6 +3,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
     protected Typescript.Reporter reporter;
     protected Valadoc.Settings settings;
     protected Valadoc.Api.Tree current_tree;
+    protected Typescript.Package ? current_package = null;
     protected Typescript.Package ? current_main_package = null;
     protected Typescript.Class current_class;
     protected Typescript.Interface current_interface;
@@ -80,6 +81,8 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 
         var ts_package = new Typescript.Package (this.settings, this.current_tree.context, this.gir_parser, package);
 
+        this.current_package = ts_package;
+
         if (ts_package.is_main ()) {
             this.current_main_package = ts_package;
             package.accept_all_children (this);
@@ -116,7 +119,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
         this.reporter.simple_note ("visit_namespace START", ns.get_full_name ());
         this.reporter.simple_note ("visit_namespace START", this.current_main_package.get_vala_namespace ());
 
-        var ts_namespace = new Typescript.Namespace (ns);
+        var ts_namespace = new Typescript.Namespace (ns, this.current_main_package);
         this.current_main_package.current_namespace = ts_namespace;
         if (this.current_main_package.root_namespace == null && ts_namespace.is_root ()) {
             this.current_main_package.root_namespace = ts_namespace;

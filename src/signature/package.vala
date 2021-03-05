@@ -129,7 +129,6 @@ public class Typescript.Package : Typescript.Signable {
 
         signature.append_line ("// Interfaces");
         foreach (var iface in this.ifaces) {
-            print (iface.get_name ());
             signature.append_line (iface.get_signature (root_namespace));
         }
 
