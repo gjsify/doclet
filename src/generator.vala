@@ -83,6 +83,12 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 		}
 
 		writer.write(this.main_package.get_signature());
+
+		var source = package.get_source_file();
+
+		this.reporter.simple_note("visit_package gir_namespace", source.data.gir_namespace);
+		this.reporter.simple_note("visit_package gir_version", source.data.gir_version);
+		this.reporter.simple_note("visit_package file_type", source.data.file_type.to_string());
 	}
 
 	/**
