@@ -15,6 +15,11 @@ public class Typescript.Class : Typescript.Signable {
     protected override string build_signature (Typescript.Namespace ? root_namespace) {
         var signature = new Typescript.SignatureBuilder ();
         var accessibility = this.cl.accessibility.to_string (); // "public" or "private"
+        var name = this.get_name ();
+
+        if (name == "Error") {
+            return "// class Error ...";
+        }
 
         // TODO comments builder
         signature.append ("\n/**\n", false);
@@ -30,7 +35,7 @@ public class Typescript.Class : Typescript.Signable {
             signature.append_keyword ("/* sealed */");
         }
         signature.append_keyword ("class");
-        signature.append (this.get_name ());
+        signature.append (name);
 
         var type_parameters = this.cl.get_children_by_type (Valadoc.Api.NodeType.TYPE_PARAMETER, false);
         if (type_parameters.size > 0) {
