@@ -5,12 +5,16 @@ public class Typescript.Class : Typescript.Signable {
         this.cl = cl;
     }
 
+    public string get_name () {
+        return this.cl.name;
+    }
+
     /**
      * Basesd on libvaladoc/api/class.vala
      */
     protected override string build_signature (Typescript.Namespace ? root_namespace) {
         var signature = new Typescript.SignatureBuilder ();
-        var accessibility = this.cl.accessibility.to_string ();         // "public" or "private"
+        var accessibility = this.cl.accessibility.to_string (); // "public" or "private"
 
         // TODO comments builder
         signature.append ("\n/**\n", false);
@@ -26,7 +30,7 @@ public class Typescript.Class : Typescript.Signable {
             signature.append_keyword ("/* sealed */");
         }
         signature.append_keyword ("class");
-        signature.append_symbol (this.cl);
+        signature.append (this.get_name ());
 
         var type_parameters = this.cl.get_children_by_type (Valadoc.Api.NodeType.TYPE_PARAMETER, false);
         if (type_parameters.size > 0) {
@@ -65,12 +69,11 @@ public class Typescript.Class : Typescript.Signable {
 
             first = true;
 
-            foreach (Valadoc.Api.Item _implemented_interface in interfaces) {
+            foreach (Valadoc.Api.Item implemented_interface in interfaces) {
                 if (!first) {
                     signature.append (",", false);
                 }
-                var implemented_interface = (Valadoc.Api.TypeReference)_implemented_interface;
-                var ts_implemented_interface = new Typescript.TypeReference (implemented_interface);
+                var ts_implemented_interface = new Typescript.TypeReference (implemented_interface as Valadoc.Api.TypeReference);
                 signature.append_content (ts_implemented_interface.get_signature (root_namespace));
                 first = false;
             }
@@ -134,7 +137,7 @@ public class Typescript.Class : Typescript.Signable {
         //
         var signals = cl.get_children_by_types ({ Valadoc.Api.NodeType.SIGNAL },false);
         foreach (var sig in signals) {
-            var ts_sig = new Typescript.Signal (sig as Valadoc.Api.Signal);
+            var ts_sig = new Typescript.Signal (sig as Valadoc.Api.Signal,this);
             signature.append_content (ts_sig.get_signature (root_namespace));
             signature.append ("\n",false);
         }

@@ -28,7 +28,8 @@ public class Typescript.TypeReference : Typescript.Signable {
             type = "void";
         } else if (this.type_ref.data_type is Valadoc.Api.Symbol) {
             var symbol = this.type_ref.data_type as Valadoc.Api.Symbol;
-            type = symbol.get_full_name ();
+            var type_full_name = symbol.get_full_name ();
+            type = root_namespace.remove_vala_namespace (type_full_name);
             // type = (this.type_ref.data.to_string()); // => Gtk.Widget
         } else if (this.type_ref.data_type is Valadoc.Api.TypeReference) {
             var ts_data_type = new Typescript.TypeReference (this.type_ref.data_type as Valadoc.Api.TypeReference);

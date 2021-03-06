@@ -5,15 +5,27 @@ public class Typescript.Method : Typescript.Signable {
         this.m = m;
     }
 
+    public string get_name (bool as_virtual = false) {
+        var name = this.m.name;
+        if (name.has_prefix ("@")) {
+            name = "/* @ */ " + name.substring (1);
+        }
+        if (as_virtual && (this.m.is_abstract || this.m.is_virtual)) {
+            name = "vfunc_" + name;
+        }
+        return name;
+    }
+
     /**
-     * Basesd on libvaladoc/api/Method.vala
+     * Basesd on libvaladoc/api/method.vala
      */
-    protected override string build_signature (Typescript.Namespace ? root_namespace) {
+    protected string ? _build_signature (Typescript.Namespace ? root_namespace, bool as_virtual) {
         var signature = new Typescript.SignatureBuilder ();
         signature.append_keyword (this.m.accessibility.to_string ());
 
-        // TODO comments builder
-
+        if (as_virtual && (!this.m.is_abstract && !this.m.is_virtual)) {
+            return null;
+        }
 
         if (!this.m.is_constructor) {
             if (this.m.is_static) {
@@ -36,11 +48,7 @@ public class Typescript.Method : Typescript.Signable {
             signature.append_keyword ("async");
         }
 
-        if (this.m.is_virtual) {
-            signature.append ("vfunc_" + this.m.name);
-        } else {
-            signature.append (this.m.name);
-        }
+        signature.append (this.get_name (as_virtual));
 
         var type_parameters = this.m.get_children_by_type (Valadoc.Api.NodeType.TYPE_PARAMETER, false);
         if (type_parameters.size > 0) {
@@ -97,6 +105,23 @@ public class Typescript.Method : Typescript.Signable {
 
         signature.append (";", false);
 
+        return signature.to_string ();
+    }
+
+    /**
+     * Basesd on libvaladoc/api/method.vala
+     */
+    protected override string build_signature (Typescript.Namespace ? root_namespace) {
+        var signature = new Typescript.SignatureBuilder ();
+        var normal = this._build_signature (root_namespace, false);
+        if (normal != null) {
+            signature.append_line (normal);
+        }
+
+        var virtual = this._build_signature (root_namespace, true);
+        if (virtual != null) {
+            signature.append_line (virtual);
+        }
         return signature.to_string ();
     }
 }

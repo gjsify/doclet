@@ -11,8 +11,7 @@ public class Typescript.Constant : Typescript.Signable {
      */
     protected string get_full_name (Typescript.Namespace ? root_namespace) {
         if (root_namespace == null) {
-            stderr.printf ("root_namespace is required for constants");
-            return this.cons.name;
+            return this.cons.get_full_name ();
         }
         var vala_full_name = this.cons.get_full_name ();
         var name_without_root = root_namespace.remove_vala_namespace (vala_full_name);
