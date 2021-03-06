@@ -31,7 +31,7 @@ public class Typescript.Method : Typescript.Signable {
             if (this.m.is_static) {
                 signature.append_keyword ("static");
             } else if (this.m.is_class) {
-                signature.append_keyword ("class");
+                signature.append_keyword ("/* class */");
             } else if (this.m.is_abstract) {
                 signature.append_keyword ("abstract");
             } else if (this.m.is_override) {

@@ -16,7 +16,8 @@
         "vala",
         "valac",
         "vapi",
-        "vapidir"
+        "vapidir",
+        "vfunc"
     ],
     "editor.formatOnSave": true
 }

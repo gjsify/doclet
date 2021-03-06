@@ -45,7 +45,7 @@ public class Typescript.Doclet : Valadoc.Doclet, Object {
 		this.reporter.simple_note("doclet process verbose", settings.verbose == true ? "true" : "false");
 		this.reporter.simple_note("doclet process experimental", settings.experimental == true ? "true" : "false" );
 		this.reporter.simple_note("doclet process experimental_non_null", settings.experimental_non_null == true ? "true" : "false");
-		this.reporter.simple_note("doclet process profile", settings.profile != null ? settings.profile : "");
+		// this.reporter.simple_note("doclet process profile", settings.profile);
 		this.reporter.simple_note("doclet process basedir", settings.basedir != null ? settings.basedir : "");
 		this.reporter.simple_note("doclet process directory", settings.directory);
 		this.reporter.simple_note("doclet process defines", Typescript.join(settings.defines, ", "));

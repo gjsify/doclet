@@ -31,7 +31,9 @@ public class Typescript.Namespace : Typescript.Signable {
 
     public bool is_root () {
         var ns_str = this.get_signature (null);
-        return ns_str.index_of_char ('.') <= -1;
+        var result = ns_str.index_of_char ('.') <= -1;
+        // print ("\n is_root" + (result == true ? "true" : "false"));
+        return result;
     }
 
     /**

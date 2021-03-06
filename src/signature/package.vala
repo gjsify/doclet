@@ -26,7 +26,16 @@ public class Typescript.Package : Typescript.Signable {
     }
 
     public bool is_ready () {
-        return this.root_namespace != null && this.source_file != null;
+		if (this.root_namespace == null) {
+			print("root namespace is null!\n");
+			return false;
+		}
+
+		if (this.source_file == null) {
+			print("source file is null!\n");
+			return false;
+		}
+        return true;
     }
 
     public string ? get_vala_namespace () {

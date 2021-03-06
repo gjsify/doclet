@@ -11,9 +11,10 @@
     "build": "npm run build:meson && npm run build:ninja",
     "build:meson": "meson builddir",
     "build:ninja": "ninja -C builddir",
-    "types": "npm run set-version && npm run update:submodules && npm run doc:gtk",
-    "doc:gtk:local": "VALA_VERSION=$(valac --api-version) && valadoc --verbose --enable-experimental --enable-experimental-non-null --profile gobject --deps --use-svg-images --target-glib auto --doclet \"builddir\" --vapidir \"/usr/local/share/vala-$VALA_VERSION/vapi\" --girdir \"girs/gir-1.0\" --package-name \"Gtk-3.0\" -o \"./@types/\" /usr/local/share/vala-$VALA_VERSION/vapi/gtk+-3.0.vapi",
-    "doc:gtk": "VALA_VERSION=$(valac --api-version) && valadoc --verbose --enable-experimental --enable-experimental-non-null --profile gobject --deps --use-svg-images --target-glib auto --doclet \"builddir\" --vapidir \"/usr/share/vala-$VALA_VERSION/vapi\" --girdir \"girs/gir-1.0\" --package-name \"Gtk-3.0\" -o \"./@types/\" /usr/share/vala-$VALA_VERSION/vapi/gtk+-3.0.vapi"
+    "types": "npm run update:submodules && npm run doc:gtk",
+    "types:local": "npm run update:submodules && npm run doc:gtk:local",
+    "doc:gtk": "VALA_VERSION=$(valac --api-version) && valadoc --verbose --enable-experimental --enable-experimental-non-null --profile gobject --deps --use-svg-images --target-glib auto --doclet \"builddir\" --vapidir \"/usr/share/vala-$VALA_VERSION/vapi\" --girdir \"girs/gir-1.0\" --package-name \"gtk+-3.0\" -o \"./@types/\" /usr/share/vala-$VALA_VERSION/vapi/gtk+-3.0.vapi",
+    "doc:gtk:local": "VALA_VERSION=$(valac --api-version) && valadoc --verbose --enable-experimental --enable-experimental-non-null --profile gobject --deps --use-svg-images --target-glib auto --doclet \"builddir\" --vapidir \"/usr/local/share/vala-$VALA_VERSION/vapi\" --girdir \"girs/gir-1.0\" --package-name \"gtk+-3.0\" -o \"./@types/\" /usr/local/share/vala-$VALA_VERSION/vapi/gtk+-3.0.vapi"
   },
   "repository": {
     "type": "git",
