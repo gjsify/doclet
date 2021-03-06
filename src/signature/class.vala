@@ -86,6 +86,7 @@ public class Typescript.Class : Typescript.Signable {
         // Properties
         //
         var properties = cl.get_children_by_types ({ Valadoc.Api.NodeType.PROPERTY }, false);
+        signature.append_line ("// Properties\n");
         foreach (var prop in properties) {
             var ts_prop = new Typescript.Property (prop as Valadoc.Api.Property);
             signature.append_content (ts_prop.get_signature (root_namespace));
@@ -96,8 +97,11 @@ public class Typescript.Class : Typescript.Signable {
         // Constructors
         //
         var constructors = cl.get_children_by_types ({ Valadoc.Api.NodeType.CREATION_METHOD }, false);
+        signature.append_line ("// Constructors\n");
+        // Default constructor TODO add parameters
+        signature.append_line ("public constructor ()\n");
         foreach (var constr in constructors) {
-            var ts_constr = new Typescript.Method (constr as Valadoc.Api.Method);
+            var ts_constr = new Typescript.Method (constr as Valadoc.Api.Method, this, null);
             signature.append_content (ts_constr.get_signature (root_namespace));
             signature.append ("\n", false);
         }
@@ -106,8 +110,9 @@ public class Typescript.Class : Typescript.Signable {
         // Static Methods
         //
         var static_methods = cl.get_children_by_types ({ Valadoc.Api.NodeType.STATIC_METHOD }, false);
+        signature.append_line ("// Static Methods\n");
         foreach (var m in static_methods) {
-            var ts_m = new Typescript.Method (m as Valadoc.Api.Method);
+            var ts_m = new Typescript.Method (m as Valadoc.Api.Method, this, null);
             signature.append_content (ts_m.get_signature (root_namespace));
             signature.append ("\n", false);
         }
@@ -116,16 +121,18 @@ public class Typescript.Class : Typescript.Signable {
         // Methods
         //
         var methods = cl.get_children_by_types ({ Valadoc.Api.NodeType.METHOD }, false);
+        signature.append_line ("// Methods\n");
         foreach (var m in methods) {
-            var ts_m = new Typescript.Method (m as Valadoc.Api.Method);
+            var ts_m = new Typescript.Method (m as Valadoc.Api.Method, this, null);
             signature.append_content (ts_m.get_signature (root_namespace));
             signature.append ("\n", false);
         }
 
         //
-        // Delegate
+        // Delegates
         //
         var delegates = cl.get_children_by_types ({ Valadoc.Api.NodeType.DELEGATE }, false);
+        signature.append_line ("// Delegates\n");
         foreach (var dele in delegates) {
             var ts_dele = new Typescript.Delegate (dele as Valadoc.Api.Delegate);
             signature.append_content (ts_dele.get_signature (root_namespace));
@@ -136,6 +143,7 @@ public class Typescript.Class : Typescript.Signable {
         // Signals
         //
         var signals = cl.get_children_by_types ({ Valadoc.Api.NodeType.SIGNAL },false);
+        signature.append_line ("// Signals\n");
         foreach (var sig in signals) {
             var ts_sig = new Typescript.Signal (sig as Valadoc.Api.Signal,this);
             signature.append_content (ts_sig.get_signature (root_namespace));

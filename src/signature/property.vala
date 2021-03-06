@@ -16,17 +16,17 @@ public class Typescript.Property : Typescript.Signable {
         } else if (this.prop.is_override) {
             signature.append_keyword ("override");
         } else if (this.prop.is_virtual) {
-            signature.append_keyword ("virtual");
+            signature.append_keyword ("/* virtual */");
         }
 
         // Write only
         if (this.prop.getter == null && this.prop.setter != null) {
-            signature.append ("readonly");
+            // TODO setter?
         }
 
         // Read only
         if (this.prop.getter != null && this.prop.setter == null) {
-            // TODO setter?
+            signature.append ("readonly");
         }
 
 

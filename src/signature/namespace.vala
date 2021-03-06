@@ -21,7 +21,6 @@ public class Typescript.Namespace : Typescript.Signable {
         var root_prefix = this.get_vala_namespace_name () + ".";
         string result;
         if (vala_full_name.has_prefix (root_prefix)) {
-            print ("\n true");
             result = vala_full_name.substring (root_prefix.length);
         } else {
             result = vala_full_name;
@@ -32,7 +31,6 @@ public class Typescript.Namespace : Typescript.Signable {
     public bool is_root () {
         var ns_str = this.get_signature (null);
         var result = ns_str.index_of_char ('.') <= -1;
-        // print ("\n is_root" + (result == true ? "true" : "false"));
         return result;
     }
 

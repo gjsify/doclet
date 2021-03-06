@@ -64,6 +64,19 @@ sudo echo "/usr/local/lib/" >> /etc/ld.so.conf.d/vala.conf
 sudo ldconfig
 ```
 
+## Vala Language Server
+
+```bash
+sudo apt install libjsonrpc-glib-1.0-1 libjsonrpc-glib-1.0-dev libjson-glib-1.0-0
+```
+
+Build:
+
+```bash
+meson -Dprefix=/usr/local build
+```
+
+
 ## See also
 
 * https://gitlab.gnome.org/GNOME/gobject-introspection/-/blob/master/giscanner/docwriter.py#L1116

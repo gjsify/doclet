@@ -19,5 +19,6 @@
         "vapidir",
         "vfunc"
     ],
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "vls.languageServerPath": "/home/jumplink/Projekte/gjsify/vala-language-server/build/src/vala-language-server"
 }

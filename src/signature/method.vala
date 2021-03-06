@@ -1,19 +1,62 @@
 public class Typescript.Method : Typescript.Signable {
     protected Valadoc.Api.Method m;
+    protected Typescript.Class? cls = null;
+    protected Typescript.Interface? iface = null;
 
-    public Method (Valadoc.Api.Method m) {
+    public Method (Valadoc.Api.Method m, Typescript.Class? cls, Typescript.Interface? iface) {
         this.m = m;
+        this.cls = cls;
+        this.iface = iface;
     }
 
-    public string get_name (bool as_virtual = false) {
+    public string get_name (Typescript.Namespace ? root_namespace, bool as_virtual = false) {
         var name = this.m.name;
         if (name.has_prefix ("@")) {
             name = "/* @ */ " + name.substring (1);
+        }
+        if (this.m.is_constructor) {
+            print("\nconstructor " + name);
+            var parent_name = this.get_parent_name(root_namespace);
+            if (parent_name != null) {
+                print("\nparent_name " + parent_name);
+                if (name == parent_name) {
+                    // name = "constructor";
+                    name = "new";
+                } else  {
+                    var prefix = parent_name + ".";
+                    if (name.has_prefix(prefix)) {
+                        
+                        name = "new_" + name.substring(prefix.length);
+                    }
+                }
+            }
         }
         if (as_virtual && (this.m.is_abstract || this.m.is_virtual)) {
             name = "vfunc_" + name;
         }
         return name;
+    }
+
+    /**
+     * Name of the class or interface in which this method is defined
+     */
+    public string? get_parent_name (Typescript.Namespace ? root_namespace) {
+        if(this.iface != null) {
+            return this.iface.get_name();
+        }
+        if(this.cls != null) {
+            return this.cls.get_name();
+        }
+        return null;
+    }
+
+    public string get_return_type(Typescript.Namespace ? root_namespace) {
+        if (this.m.is_constructor) {
+            return this.get_parent_name(root_namespace);
+        }
+        var ts_return_type = new Typescript.TypeReference (this.m.return_type as Valadoc.Api.TypeReference);
+        var result = ts_return_type.get_signature (root_namespace);
+        return result;
     }
 
     /**
@@ -48,7 +91,7 @@ public class Typescript.Method : Typescript.Signable {
             signature.append_keyword ("async");
         }
 
-        signature.append (this.get_name (as_virtual));
+        signature.append (this.get_name (root_namespace, as_virtual));
 
         var type_parameters = this.m.get_children_by_type (Valadoc.Api.NodeType.TYPE_PARAMETER, false);
         if (type_parameters.size > 0) {
@@ -82,11 +125,8 @@ public class Typescript.Method : Typescript.Signable {
         //
         // Return type
         //
-        if (!this.m.is_constructor) {
-            signature.append (":", false);
-            var ts_return_type = new Typescript.TypeReference (this.m.return_type as Valadoc.Api.TypeReference);
-            signature.append_content (ts_return_type.get_signature (root_namespace));
-        }
+        signature.append (":", false);
+        signature.append_content (this.get_return_type(root_namespace));
 
         var exceptions = this.m.get_children_by_types ({ Valadoc.Api.NodeType.ERROR_DOMAIN, Valadoc.Api.NodeType.CLASS });
         if (exceptions.size > 0) {

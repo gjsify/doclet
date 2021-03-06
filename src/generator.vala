@@ -304,7 +304,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
      */
     public void visit_function (Valadoc.Api.Method m) {
         // this.reporter.simple_note("visit_function", m.name);
-        var ts_m = new Typescript.Method (m as Valadoc.Api.Method);
+        var ts_m = new Typescript.Method (m as Valadoc.Api.Method, null, null);
         this.current_main_package.functions.add (ts_m);
         m.accept_all_children (this);
     }
