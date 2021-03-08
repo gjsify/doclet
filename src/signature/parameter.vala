@@ -5,6 +5,17 @@ public class Typescript.Parameter : Typescript.Signable {
         this.param = param;
     }
 
+    public string get_name () {
+        var name = this.param.name;
+        if (name.has_prefix ("@")) {
+            name = name.substring (1);
+        }
+        if (Typescript.is_reserved_variable_name (name)) {
+            return "_" + name;
+        }
+        return name;
+    }
+
     /**
      * Basesd on libvaladoc/api/parameter.vala
      */
@@ -19,7 +30,7 @@ public class Typescript.Parameter : Typescript.Signable {
                 signature.append_keyword ("/* ref */");
             }
 
-            signature.append (this.param.name);
+            signature.append (this.get_name ());
             signature.append (":");
 
             var type = this.param.parameter_type;

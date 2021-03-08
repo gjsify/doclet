@@ -36,6 +36,15 @@ namespace Typescript {
         return result;
     }
 
+    public bool contains (string[] strings, string search) {
+        foreach (var str in strings) {
+            if (search == str) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Remove the Class name from a function name
      */

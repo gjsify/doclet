@@ -5,6 +5,27 @@ public class Typescript.TypeReference : Typescript.Signable {
         this.type_ref = type_ref;
     }
 
+    public string get_name (Typescript.Namespace ? root_namespace) {
+        string ? type = null;
+        if (this.type_ref.data_type == null) {
+            type = "void";
+        } else if (this.type_ref.data_type is Valadoc.Api.Symbol) {
+            var symbol = this.type_ref.data_type as Valadoc.Api.Symbol;
+            var type_full_name = symbol.get_full_name ();
+            type = root_namespace.remove_vala_namespace (type_full_name);
+            // type = (this.type_ref.data.to_string()); // => Gtk.Widget
+        } else if (this.type_ref.data_type is Valadoc.Api.TypeReference) {
+            var ts_data_type = new Typescript.TypeReference (this.type_ref.data_type as Valadoc.Api.TypeReference);
+            type = ts_data_type.get_signature (root_namespace);
+        }
+
+        if (type == null) {
+            type = "any";
+        }
+        type = Typescript.transform_type (type);
+        return type;
+    }
+
     /**
      * Basesd on libvaladoc/api/typereference.vala
      */
@@ -23,22 +44,8 @@ public class Typescript.TypeReference : Typescript.Signable {
         }
 
         // Type
-        string ? type = null;
-        if (this.type_ref.data_type == null) {
-            type = "void";
-        } else if (this.type_ref.data_type is Valadoc.Api.Symbol) {
-            var symbol = this.type_ref.data_type as Valadoc.Api.Symbol;
-            var type_full_name = symbol.get_full_name ();
-            type = root_namespace.remove_vala_namespace (type_full_name);
-            // type = (this.type_ref.data.to_string()); // => Gtk.Widget
-        } else if (this.type_ref.data_type is Valadoc.Api.TypeReference) {
-            var ts_data_type = new Typescript.TypeReference (this.type_ref.data_type as Valadoc.Api.TypeReference);
-            type = ts_data_type.get_signature (root_namespace);
-        }
+        var type = this.get_name (root_namespace);
 
-        if (type == null) {
-            type = "any";
-        }
         signature.append (type);
 
         var type_arguments = this.type_ref.get_type_arguments ();

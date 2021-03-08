@@ -36,6 +36,7 @@ sources = files(
   'src/generator.vala',
   'src/girparser.vala',
   'src/reporter.vala',
+  'src/transformation.vala',
   'src/utils.vala',
   'src/writer.vala',
 )
