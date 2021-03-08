@@ -29,20 +29,20 @@ public class Typescript.Package : Typescript.Signable {
     }
 
     public bool is_ready () {
-		if (this.root_namespace == null) {
-			print("root namespace is null!\n");
-			return false;
-		}
+        if (this.root_namespace == null) {
+            print ("root namespace is null!\n");
+            return false;
+        }
 
-		if (this.source_file == null) {
-			print("source file is null!\n");
-			return false;
-		}
+        if (this.source_file == null) {
+            print ("source file is null!\n");
+            return false;
+        }
         return true;
     }
 
     public string get_name () {
-        return this.package.get_full_name();
+        return this.package.get_full_name ();
     }
 
     public string ? get_vala_namespace () {
@@ -173,7 +173,7 @@ public class Typescript.Package : Typescript.Signable {
             signature.append_line (error_domain.get_signature (root_namespace));
         }
 
-        signature.append_line ("// Functions");
+        signature.append_line ("// Global functions");
         foreach (var func in this.functions) {
             signature.append_line (func.get_signature (root_namespace));
         }

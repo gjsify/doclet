@@ -1,19 +1,23 @@
 public class Typescript.Interface : Typescript.Signable {
-    protected Valadoc.Api.Interface iface;
+    protected Valadoc.Api.Interface _interface;
 
     public Interface (Valadoc.Api.Interface iface) {
-        this.iface = iface;
+        this._interface = iface;
     }
 
-    public string get_name () {
-        return this.iface.name;
+    public string get_name (Typescript.Namespace ? root_namespace) {
+        var name = this._interface.get_full_name ();
+        if (root_namespace != null) {
+            name = root_namespace.remove_vala_namespace (name);
+        }
+        return name;
     }
 
     /**
      * Remove the Class name from a function name
      */
-    public string remove_namespace (string vala_full_name) {
-        return Typescript.remove_namespace(vala_full_name, this.get_name ());
+    public string remove_namespace (Typescript.Namespace ? root_namespace, string vala_full_name) {
+        return Typescript.remove_namespace (vala_full_name, this.get_name (root_namespace));
     }
 
     /**
@@ -21,7 +25,7 @@ public class Typescript.Interface : Typescript.Signable {
      */
     public override string build_signature (Typescript.Namespace ? root_namespace) {
         var signature = new Typescript.SignatureBuilder ();
-        var accessibility = this.iface.accessibility.to_string (); // "public" or "private"
+        var accessibility = this._interface.accessibility.to_string (); // "public" or "private"
 
         // TODO comments builder
         signature.append ("\n/**\n", false);
@@ -31,9 +35,9 @@ public class Typescript.Interface : Typescript.Signable {
         signature.append ("export");
         // signature.append_keyword ("abstract class");
         signature.append_keyword ("interface");
-        signature.append_symbol (this.iface);
+        signature.append_symbol (this._interface);
 
-        var type_parameters = this.iface.get_children_by_type (Valadoc.Api.NodeType.TYPE_PARAMETER, false);
+        var type_parameters = this._interface.get_children_by_type (Valadoc.Api.NodeType.TYPE_PARAMETER, false);
         if (type_parameters.size > 0) {
             signature.append ("<", false);
             bool first = true;
@@ -54,10 +58,10 @@ public class Typescript.Interface : Typescript.Signable {
         // Extended class
         //
         bool first = true;
-        if (this.iface.base_type != null && this.iface.base_type is Valadoc.Api.TypeReference) {
+        if (this._interface.base_type != null && this._interface.base_type is Valadoc.Api.TypeReference) {
             signature.append ("extends");
 
-            var base_type = (Valadoc.Api.TypeReference) this.iface.base_type;
+            var base_type = (Valadoc.Api.TypeReference) this._interface.base_type;
             var ts_base_type = new Typescript.TypeReference (base_type);
 
             signature.append_content (ts_base_type.get_signature (root_namespace));
@@ -67,7 +71,7 @@ public class Typescript.Interface : Typescript.Signable {
         //
         // Extended interfaces
         //
-        var interfaces = this.iface.get_implemented_interface_list ();
+        var interfaces = this._interface.get_implemented_interface_list ();
         if (interfaces.size > 0) {
             if (first) {
                 signature.append ("extends");
@@ -90,7 +94,7 @@ public class Typescript.Interface : Typescript.Signable {
         //
         // Properties
         //
-        var properties = iface.get_children_by_types ({ Valadoc.Api.NodeType.PROPERTY }, false);
+        var properties = this._interface.get_children_by_types ({ Valadoc.Api.NodeType.PROPERTY }, false);
         foreach (var _prop in properties) {
             var prop = (Valadoc.Api.Property)_prop;
             var ts_prop = new Typescript.Property (prop);
@@ -101,11 +105,11 @@ public class Typescript.Interface : Typescript.Signable {
         //
         // Methods
         //
-        var methods = iface.get_children_by_types ({ Valadoc.Api.NodeType.METHOD }, false);
+        var methods = this._interface.get_children_by_types ({ Valadoc.Api.NodeType.METHOD }, false);
         foreach (var m in methods) {
-            //  Typescript.Interface? iface_param = null;
-            //  iface_param = this;
-            var ts_m = new Typescript.Method (m as Valadoc.Api.Method, null, this);
+            // Typescript.Interface? iface_param = null;
+            // iface_param = this;
+            var ts_m = new Typescript.Method (m as Valadoc.Api.Method, null, this, null, null);
             signature.append_content (ts_m.get_signature (root_namespace));
             signature.append ("\n", false);
         }

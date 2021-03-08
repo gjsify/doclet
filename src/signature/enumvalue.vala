@@ -1,12 +1,12 @@
 public class Typescript.EnumValue : Typescript.Signable {
-    protected Valadoc.Api.EnumValue e_val;
+    protected Valadoc.Api.EnumValue _enum_value;
 
-    public EnumValue (Valadoc.Api.EnumValue e_val) {
-        this.e_val = e_val;
+    public EnumValue (Valadoc.Api.EnumValue enum_value) {
+        this._enum_value = enum_value;
     }
 
     public string get_default_value () {
-        var default_value = this.e_val.default_value;
+        var default_value = this._enum_value.default_value;
         return default_value.style.to_string () + " TODO";
     }
 
@@ -15,9 +15,9 @@ public class Typescript.EnumValue : Typescript.Signable {
      */
     protected override string build_signature (Typescript.Namespace ? root_namespace) {
         var signature = new Typescript.SignatureBuilder ();
-        signature.append_symbol (this.e_val);
+        signature.append_symbol (this._enum_value);
 
-        if (e_val.has_default_value) {
+        if (this._enum_value.has_default_value) {
             signature.append ("=");
 
             signature.append_content (this.get_default_value ());

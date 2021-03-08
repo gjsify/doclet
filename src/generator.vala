@@ -3,16 +3,21 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
     protected Typescript.Reporter reporter;
     protected Valadoc.Settings settings;
     protected Valadoc.Api.Tree current_tree;
+    protected Typescript.GirParser gir_parser;
+
     protected Typescript.Package ? current_dependency_package = null;
     protected Typescript.Package ? current_main_package = null;
+    protected Typescript.Class ? current_class = null;
+    protected Typescript.Interface ? current_interface = null;
+    protected Typescript.Struct ? current_struct = null;
+    protected Typescript.Enum ? current_enum = null;
+    protected Typescript.ErrorDomain ? current_error_domain = null;
+
     /**
      * Normally for GObject and GLib
      */
     protected Vala.ArrayList<Typescript.Package> general_dependencies = new Vala.ArrayList<Typescript.Package> ();
     protected Vala.ArrayList<Typescript.Package> main_packages = new Vala.ArrayList<Typescript.Package> ();
-    protected Typescript.Class current_class;
-    protected Typescript.Interface current_interface;
-    protected Typescript.GirParser gir_parser;
 
     public bool execute (Valadoc.Settings settings, Valadoc.Api.Tree tree, Typescript.Reporter reporter, Typescript.GirParser gir_parser) {
         this.settings = settings;
@@ -22,7 +27,6 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 
         tree.accept (this);
 
-        
         foreach (var main_package in this.main_packages) {
             if (main_package != null && !main_package.is_ready ()) {
                 this.reporter.simple_error ("execute", "Package is not ready!");
@@ -78,11 +82,11 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
         var ts_package = new Typescript.Package (this.settings, this.current_tree.context, this.gir_parser, package);
 
         if (ts_package.is_main ()) {
-            this.visit_main_package(ts_package);
+            this.visit_main_package (ts_package);
         } else if (ts_package.is_dependency ()) {
-            this.visit_dependency_package(ts_package);
+            this.visit_dependency_package (ts_package);
         } else {
-            this.reporter.simple_error("visit_package", "Package is not a main package and not a dependency!");
+            this.reporter.simple_error ("visit_package", "Package is not a main package and not a dependency!");
         }
     }
 
@@ -91,10 +95,10 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
         this.reporter.simple_note ("visit_main_package START", ts_package.get_name ());
         this.current_main_package = ts_package;
         ts_package.package.accept_all_children (this);
-    
+
         // END
         this.reporter.simple_note ("visit_main_package END", ts_package.get_name ());
-        this.main_packages.add(this.current_main_package);
+        this.main_packages.add (this.current_main_package);
     }
 
     public void visit_dependency_package (Typescript.Package ts_package) {
@@ -105,7 +109,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 
         if (this.current_main_package == null) {
             // GObject or GLib
-            this.general_dependencies.add(this.current_dependency_package);
+            this.general_dependencies.add (this.current_dependency_package);
         } else {
             this.current_main_package.add_dependency (this.current_dependency_package);
         }
@@ -141,9 +145,9 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 
         ns.accept_all_children (this);
 
-        //  if (ns != null && ns.get_full_name () != null) {
-            
-        //  }
+        // if (ns != null && ns.get_full_name () != null) {
+
+        // }
 
         this.reporter.simple_note ("visit_namespace END", ns.get_full_name ());
     }
@@ -192,7 +196,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
      * @param item a class
      */
     public override void visit_class (Valadoc.Api.Class cl) {
-        this.reporter.simple_note("visit_class START", cl.name);
+        this.reporter.simple_note ("visit_class START", cl.name);
 
         var ts_class = new Typescript.Class (cl);
         this.current_class = ts_class;
@@ -217,7 +221,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
         }
 
         // END
-        this.reporter.simple_note("visit_class END", cl.name);
+        this.reporter.simple_note ("visit_class END", cl.name);
 
         this.current_class = null;
     }
@@ -228,9 +232,12 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
      * @param item a struct
      */
     public override void visit_struct (Valadoc.Api.Struct st) {
-        this.reporter.simple_note("visit_struct START", st.name);
+        this.reporter.simple_note ("visit_struct START", st.name);
+        var ts_struct = new Typescript.Struct (st);
+        this.current_struct = ts_struct;
         st.accept_all_children (this);
-        this.reporter.simple_note("visit_struct END", st.name);
+        this.reporter.simple_note ("visit_struct END", st.name);
+        this.current_struct = null;
     }
 
     /**
@@ -271,8 +278,9 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
      * @param item a delegate
      */
     public override void visit_delegate (Valadoc.Api.Delegate dele) {
-        // this.reporter.simple_note("visit_delegate", "visit_delegate: %s", (string) dele.name);
+        this.reporter.simple_note ("visit_delegate START", dele.name);
         dele.accept_children ({ Valadoc.Api.NodeType.FORMAL_PARAMETER, Valadoc.Api.NodeType.TYPE_PARAMETER }, this);
+        this.reporter.simple_note ("visit_delegate END", dele.name);
     }
 
     /**
@@ -281,8 +289,9 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
      * @param item a signal
      */
     public override void visit_signal (Valadoc.Api.Signal sig) {
-        // this.reporter.simple_note("visit_signal", "visit_signal: %s", (string) sig.name);
+        this.reporter.simple_note ("visit_signal START", sig.name);
         sig.accept_all_children (this);
+        this.reporter.simple_note ("visit_signal END", sig.name);
     }
 
     /**
@@ -294,14 +303,15 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
         // this.reporter.simple_note("visit_method", "visit_method: %s", (string) m.name);
         // m.accept_children ({NodeType.FORMAL_PARAMETER, NodeType.TYPE_PARAMETER}, this);
 
-        if (this.current_class == null && this.current_interface == null) {
-            this.visit_global_function (m);
+        var ts_m = new Typescript.Method (m as Valadoc.Api.Method, this.current_class, this.current_interface, this.current_struct, this.current_enum);
+
+        if (m.is_constructor) {
+            this.visit_constructor (ts_m);
             return;
         }
 
-        if (m.is_constructor) {
-            this.visit_constructor (m);
-            return;
+        if (ts_m.is_global ()) {
+            this.visit_global_function (ts_m);
         }
 
         m.accept_all_children (this);
@@ -313,19 +323,16 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
         m.accept_all_children (this);
     }
 
-    public void visit_constructor (Valadoc.Api.Method m) {
+    public void visit_constructor (Typescript.Method ts_method) {
         // this.reporter.simple_note("visit_constructor START", m.name);
-        m.accept_all_children (this);
     }
 
     /**
      * Global functions
      */
-    public void visit_global_function (Valadoc.Api.Method m) {
-        this.reporter.simple_note("visit_global_function", m.get_full_name());
-        var ts_m = new Typescript.Method (m as Valadoc.Api.Method, null, null);
-        this.current_main_package.functions.add (ts_m);
-        m.accept_all_children (this);
+    public void visit_global_function (Typescript.Method ts_method) {
+        this.reporter.simple_note ("visit_global_function", ts_method.get_name (this.current_main_package.root_namespace));
+        this.current_main_package.functions.add (ts_method);
     }
 
     /**
@@ -361,9 +368,17 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
      *
      * @param item a error domain
      */
-    public override void visit_error_domain (Valadoc.Api.ErrorDomain edomain) {
-        // this.reporter.simple_note("visit_error_domain", "visit_error_domain: %s", (string) edomain.name);
-        edomain.accept_all_children (this);
+    public override void visit_error_domain (Valadoc.Api.ErrorDomain error_domain) {
+        this.reporter.simple_note ("visit_error_domain START", error_domain.name);
+        var ts_error_domain = new Typescript.ErrorDomain (error_domain);
+        this.current_error_domain = ts_error_domain;
+        if (this.current_main_package != null) {
+            this.current_main_package.error_domains.add (ts_error_domain);
+        } else {
+            this.reporter.simple_error ("visit_error_domain", "Package for error domain not found!");
+        }
+        error_domain.accept_all_children (this);
+        this.reporter.simple_note ("visit_error_domain END", error_domain.name);
     }
 
     /**
@@ -382,15 +397,24 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
      * @param item a enum
      */
     public override void visit_enum (Valadoc.Api.Enum en) {
-        this.reporter.simple_note("visit_enum START", en.name);
-        var ts_enum = new Typescript.Enum(en);
-        if (this.current_class == null && this.current_interface == null) {
-            this.visit_global_enum (en);
-            return;
+        var is_global = this.current_class == null && this.current_interface == null && this.current_struct == null;
+        var ts_enum = new Typescript.Enum (en);
+        this.current_enum = ts_enum;
+
+        if (is_global) {
+            this.visit_global_enum (ts_enum);
+        } else {
+            this.reporter.simple_note ("visit_enum START", en.name);
         }
 
         en.accept_all_children (this);
-        this.reporter.simple_note("visit_enum END", en.name);
+
+        if (!is_global) {
+            this.reporter.simple_note ("visit_enum END", en.name);
+        }
+
+
+        this.current_enum = null;
     }
 
     /**
@@ -403,12 +427,10 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
         eval.accept_all_children (this);
     }
 
-    public void visit_global_enum (Valadoc.Api.Enum en) {
-        this.reporter.simple_note("visit_global_enum START", en.get_full_name());
-        var ts_en = new Typescript.Enum (en);
-        this.current_main_package.enums.add (ts_en);
-        en.accept_all_children (this);
-        this.reporter.simple_note("visit_global_enum END", en.get_full_name());
+    public void visit_global_enum (Typescript.Enum ts_enum) {
+        this.reporter.simple_note ("visit_global_enum START", ts_enum.get_name (this.current_main_package.root_namespace));
+        this.current_main_package.enums.add (ts_enum);
+        this.reporter.simple_note ("visit_global_enum END", ts_enum.get_name (this.current_main_package.root_namespace));
     }
 
     /**

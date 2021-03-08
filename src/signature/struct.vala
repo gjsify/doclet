@@ -1,8 +1,12 @@
 public class Typescript.Struct : Typescript.Signable {
-    protected Valadoc.Api.Struct struc;
+    protected Valadoc.Api.Struct _struct;
 
     public Struct (Valadoc.Api.Struct struc) {
-        this.struc = struc;
+        this._struct = struc;
+    }
+
+    public string get_name (Typescript.Namespace ? root_namespace) {
+        return this._struct.name;
     }
 
     /**
@@ -11,11 +15,11 @@ public class Typescript.Struct : Typescript.Signable {
     protected override string build_signature (Typescript.Namespace ? root_namespace) {
         var signature = new Typescript.SignatureBuilder ();
         signature
-         .append_keyword (this.struc.accessibility.to_string ());
+         .append_keyword (this._struct.accessibility.to_string ());
         signature.append_keyword ("struct");
-        signature.append_symbol (this.struc);
+        signature.append (this.get_name (root_namespace));
 
-        var type_parameters = this.struc.get_children_by_type (Valadoc.Api.NodeType.TYPE_PARAMETER, false);
+        var type_parameters = this._struct.get_children_by_type (Valadoc.Api.NodeType.TYPE_PARAMETER, false);
         if (type_parameters.size > 0) {
             signature.append ("<", false);
             bool first = true;
@@ -30,10 +34,10 @@ public class Typescript.Struct : Typescript.Signable {
             signature.append (">", false);
         }
 
-        if (this.struc.base_type != null) {
+        if (this._struct.base_type != null) {
             signature.append (":");
 
-            var ts_base_type = new Typescript.TypeReference (this.struc.base_type as Valadoc.Api.TypeReference);
+            var ts_base_type = new Typescript.TypeReference (this._struct.base_type as Valadoc.Api.TypeReference);
             signature.append_content (ts_base_type.get_signature (root_namespace));
         }
 
