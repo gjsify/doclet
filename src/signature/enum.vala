@@ -15,7 +15,11 @@ public class Typescript.Enum : Typescript.Signable {
         return ts_values;
     }
 
-    public string build_values_signature (Typescript.Namespace ? root_namespace) {
+    public string get_name(Typescript.Namespace ? root_namespace) {
+        return root_namespace.remove_vala_namespace(this._enum.get_full_name ());
+    }
+
+    public string build_values_signature(Typescript.Namespace ? root_namespace) {
         var signature = new Typescript.SignatureBuilder ();
         var ts_enum_values = this.get_values (root_namespace);
 
@@ -24,10 +28,6 @@ public class Typescript.Enum : Typescript.Signable {
             signature.append (",\n", false);
         }
         return signature.to_string ();
-    }
-
-    public string get_name (Typescript.Namespace ? root_namespace) {
-        return root_namespace.remove_vala_namespace (this._enum.get_full_name ());
     }
 
     /**
@@ -40,12 +40,15 @@ public class Typescript.Enum : Typescript.Signable {
         var signature = new Typescript.SignatureBuilder ();
         var accessibility = this._enum.accessibility.to_string (); // private || public || protected
         return signature
-                .append_keyword (accessibility == "public" ? "export" : "")
-                .append_keyword ("enum")
-                .append (this.get_name (root_namespace))
-                .append ("{\n")
-                .append (this.build_values_signature (root_namespace))
-                .append_line ("}")
-                .to_string ();
+            .append_keyword ("export")
+            .append ("/*")
+            .append_keyword (accessibility)
+            .append ("*/")
+            .append_keyword ("enum")
+            .append (this.get_name(root_namespace))
+            .append ("{\n")
+            .append(this.build_values_signature(root_namespace))
+            .append_line ("}")
+            .to_string();
     }
 }

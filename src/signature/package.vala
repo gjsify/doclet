@@ -110,7 +110,11 @@ public class Typescript.Package : Typescript.Signable {
         this.dependencies.add (pkg);
     }
 
-    public Vala.ArrayList<Typescript.Package> get_dependency (Typescript.Package pkg) {
+    public void add_dependencies (Vala.ArrayList<Typescript.Package> packages) {
+        this.dependencies.add_all (packages);
+    }
+
+    public Vala.ArrayList<Typescript.Package> get_dependencies () {
         return this.dependencies;
     }
 
@@ -125,6 +129,11 @@ public class Typescript.Package : Typescript.Signable {
         return !this.is_dependency ();
     }
 
+    public string get_import_signature() {
+        string result = @"import type * as $(this.get_gir_namespace()) from './$(this.get_gir_package_name())'; // $(this.get_vala_package_name())";
+        return result;
+    }
+
     protected Vala.SourceFile ? get_source_file () {
         var source_files = this.context.get_source_files ();
         foreach (var source_file in source_files) {
@@ -135,13 +144,22 @@ public class Typescript.Package : Typescript.Signable {
         return null;
     }
 
-
     /**
      * Basesd on libvaladoc/api/package.vala
      * @note You need to passt "--deps" to valadoc to get dependencies, TODO not working?
      */
     protected override string build_signature (Typescript.Namespace ? root_namespace) {
         var signature = new Typescript.SignatureBuilder ();
+
+        signature.append_line ("// Dependencies");
+        foreach (var dependency in this.get_dependencies()) {
+            signature.append_line (dependency.get_import_signature ());
+        }
+
+        signature.append_line ("// Interfaces");
+        foreach (var iface in this.ifaces) {
+            signature.append_line (iface.get_signature (root_namespace));
+        }
 
         signature.append_line ("// Interfaces");
         foreach (var iface in this.ifaces) {

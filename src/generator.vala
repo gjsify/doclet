@@ -94,6 +94,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
         // START
         this.reporter.simple_note ("visit_main_package START", ts_package.get_name ());
         this.current_main_package = ts_package;
+        this.current_main_package.add_dependencies(this.general_dependencies);
         ts_package.package.accept_all_children (this);
 
         // END
