@@ -3,8 +3,13 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
     protected Typescript.Reporter reporter;
     protected Valadoc.Settings settings;
     protected Valadoc.Api.Tree current_tree;
-    protected Typescript.Package ? current_package = null;
+    protected Typescript.Package ? current_dependency_package = null;
     protected Typescript.Package ? current_main_package = null;
+    /**
+     * Normally for GObject and GLib
+     */
+    protected Vala.ArrayList<Typescript.Package> general_dependencies = new Vala.ArrayList<Typescript.Package> ();
+    protected Vala.ArrayList<Typescript.Package> main_packages = new Vala.ArrayList<Typescript.Package> ();
     protected Typescript.Class current_class;
     protected Typescript.Interface current_interface;
     protected Typescript.GirParser gir_parser;
@@ -17,27 +22,30 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 
         tree.accept (this);
 
-        if (this.current_main_package != null && !this.current_main_package.is_ready ()) {
-            this.reporter.simple_error ("execute", "Package is not ready!");
+        
+        foreach (var main_package in this.main_packages) {
+            if (main_package != null && !main_package.is_ready ()) {
+                this.reporter.simple_error ("execute", "Package is not ready!");
+            }
+
+            var name = main_package.get_gir_package_name ();
+
+            this.reporter.simple_note ("write package", name);
+
+            string path = GLib.Path.build_filename (this.settings.path);
+            string filepath = GLib.Path.build_filename (path, name + ".d.ts");
+
+            DirUtils.create_with_parents (path, 0777);
+
+            var writer = new Typescript.Writer (filepath, "a+");
+            if (!writer.open ()) {
+                reporter.simple_error ("Typescript", "unable to open '%s' for writing", writer.filename);
+                return false;
+            }
+
+            var sig = main_package.get_signature (main_package.root_namespace);
+            writer.write (sig);
         }
-
-        var name = this.current_main_package.get_gir_package_name ();
-
-        this.reporter.simple_note ("write package", name);
-
-        string path = GLib.Path.build_filename (this.settings.path);
-        string filepath = GLib.Path.build_filename (path, name + ".d.ts");
-
-        DirUtils.create_with_parents (path, 0777);
-
-        var writer = new Typescript.Writer (filepath, "a+");
-        if (!writer.open ()) {
-            reporter.simple_error ("Typescript", "unable to open '%s' for writing", writer.filename);
-            return false;
-        }
-
-        var sig = this.current_main_package.get_signature (this.current_main_package.root_namespace);
-        writer.write (sig);
 
         // this.reporter.simple_note("execute", "execute: %s", (string) this.settings);
         return true;
@@ -49,19 +57,12 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
      * @param item a tree
      */
     public override void visit_tree (Valadoc.Api.Tree tree) {
+        this.reporter.simple_note ("visit_tree START", "");
         tree.accept_children (this);
-        this.reporter.simple_note ("visit_tree", "visit_tree");
-
-        // var packages = tree.get_package_list();
-        // foreach (var package in packages) {
-
-        // this.reporter.simple_note("visit_tree", @"tree package: $(package.name)");
-        // this.reporter.simple_note("visit_tree", @"tree package get_full_name: $(package.get_full_name())");
-
-        // var ts_package = new Typescript.Package(this.settings, this.tree.context, this.gir_parser, package);
-        // var signature = ts_package.get_signature();
-        // this.reporter.simple_note("visit_tree", @"$(signature)");
-        // }
+        // END
+        this.reporter.simple_note ("visit_tree END", "");
+        this.current_main_package = null;
+        this.current_dependency_package = null;
     }
 
     /**
@@ -73,26 +74,41 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
         if (package == null) {
             return;
         }
-        this.reporter.simple_note ("visit_package START", package.get_full_name ());
-
-        // Resets
-        this.current_class = null;
-        this.current_interface = null;
 
         var ts_package = new Typescript.Package (this.settings, this.current_tree.context, this.gir_parser, package);
 
-        this.current_package = ts_package;
-
         if (ts_package.is_main ()) {
-            this.current_main_package = ts_package;
-            package.accept_all_children (this);
+            this.visit_main_package(ts_package);
+        } else if (ts_package.is_dependency ()) {
+            this.visit_dependency_package(ts_package);
+        } else {
+            this.reporter.simple_error("visit_package", "Package is not a main package and not a dependency!");
         }
+    }
 
-        if (ts_package.is_dependency ()) {
-            this.current_main_package.add_dependency (ts_package);
+    public void visit_main_package (Typescript.Package ts_package) {
+        // START
+        this.reporter.simple_note ("visit_main_package START", ts_package.get_name ());
+        this.current_main_package = ts_package;
+        ts_package.package.accept_all_children (this);
+    
+        // END
+        this.reporter.simple_note ("visit_main_package END", ts_package.get_name ());
+        this.main_packages.add(this.current_main_package);
+    }
+
+    public void visit_dependency_package (Typescript.Package ts_package) {
+        this.current_dependency_package = ts_package;
+
+        // Uncomment this if you also want to visit the childs of the dependencies like the classes. interfaces etc
+        // package.accept_all_children (this);
+
+        if (this.current_main_package == null) {
+            // GObject or GLib
+            this.general_dependencies.add(this.current_dependency_package);
+        } else {
+            this.current_main_package.add_dependency (this.current_dependency_package);
         }
-
-        this.reporter.simple_note ("visit_package END", package.get_full_name ());
     }
 
     /**
@@ -102,22 +118,20 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
      */
     public override void visit_namespace (Valadoc.Api.Namespace ns) {
 
-        if (!ns.is_browsable (this.settings)) {
-            return;
-        }
-
         // Is global namespace?
         if (ns.name == null) {
             ns.accept_all_children (this);
             return;
         }
 
+        if (!ns.is_browsable (this.settings)) {
+            return;
+        }
+
         // Resets
-        this.current_class = null;
-        this.current_interface = null;
+
 
         this.reporter.simple_note ("visit_namespace START", ns.get_full_name ());
-        this.reporter.simple_note ("visit_namespace START", this.current_main_package.get_vala_namespace ());
 
         var ts_namespace = new Typescript.Namespace (ns, this.current_main_package);
         this.current_main_package.current_namespace = ts_namespace;
@@ -127,9 +141,11 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 
         ns.accept_all_children (this);
 
-        if (ns != null && ns.get_full_name () != null) {
-            this.reporter.simple_note ("visit_namespace START", ns.get_full_name ());
-        }
+        //  if (ns != null && ns.get_full_name () != null) {
+            
+        //  }
+
+        this.reporter.simple_note ("visit_namespace END", ns.get_full_name ());
     }
 
     /**
@@ -142,7 +158,6 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 
         var ts_iface = new Typescript.Interface (iface);
         this.current_interface = ts_iface;
-        this.current_class = null;
         this.current_main_package.ifaces.add (ts_iface);
 
         iface.accept_all_children (this);
@@ -163,6 +178,9 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
             }
         }
 
+        // END
+        this.current_interface = null;
+
         // var ts_iface = new Typescript.Interface(iface);
         // var sig = ts_iface.get_signature();
         // this.reporter.simple_note("visit_interface", @"$(sig)");
@@ -174,11 +192,10 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
      * @param item a class
      */
     public override void visit_class (Valadoc.Api.Class cl) {
-        // this.reporter.simple_note("visit_class", "visit_class: %s", (string) cl.name);
+        this.reporter.simple_note("visit_class START", cl.name);
 
         var ts_class = new Typescript.Class (cl);
         this.current_class = ts_class;
-        this.current_interface = null;
         this.current_main_package.classes.add (ts_class);
 
         cl.accept_all_children (this);
@@ -199,9 +216,10 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
             }
         }
 
-        // var ts_class = new Typescript.Class(cl);
-        // var sig = ts_class.get_signature();
-        // this.reporter.simple_note("visit_class", @"$(sig)");
+        // END
+        this.reporter.simple_note("visit_class END", cl.name);
+
+        this.current_class = null;
     }
 
     /**
@@ -210,8 +228,9 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
      * @param item a struct
      */
     public override void visit_struct (Valadoc.Api.Struct st) {
-        // this.reporter.simple_note("visit_struct", "visit_struct: %s", (string) st.name);
+        this.reporter.simple_note("visit_struct START", st.name);
         st.accept_all_children (this);
+        this.reporter.simple_note("visit_struct END", st.name);
     }
 
     /**
@@ -276,7 +295,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
         // m.accept_children ({NodeType.FORMAL_PARAMETER, NodeType.TYPE_PARAMETER}, this);
 
         if (this.current_class == null && this.current_interface == null) {
-            this.visit_function (m);
+            this.visit_global_function (m);
             return;
         }
 
@@ -290,20 +309,20 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
     }
 
     public void visit_static_method (Valadoc.Api.Method m) {
-
+        // this.reporter.simple_note("visit_static_method START", m.name);
         m.accept_all_children (this);
     }
 
     public void visit_constructor (Valadoc.Api.Method m) {
-        // this.reporter.simple_note("visit_constructor", m.name);
+        // this.reporter.simple_note("visit_constructor START", m.name);
         m.accept_all_children (this);
     }
 
     /**
      * Global functions
      */
-    public void visit_function (Valadoc.Api.Method m) {
-        // this.reporter.simple_note("visit_function", m.name);
+    public void visit_global_function (Valadoc.Api.Method m) {
+        this.reporter.simple_note("visit_global_function", m.get_full_name());
         var ts_m = new Typescript.Method (m as Valadoc.Api.Method, null, null);
         this.current_main_package.functions.add (ts_m);
         m.accept_all_children (this);
@@ -363,8 +382,15 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
      * @param item a enum
      */
     public override void visit_enum (Valadoc.Api.Enum en) {
-        // this.reporter.simple_note("visit_enum", "visit_enum: %s", (string) en.name);
+        this.reporter.simple_note("visit_enum START", en.name);
+        var ts_enum = new Typescript.Enum(en);
+        if (this.current_class == null && this.current_interface == null) {
+            this.visit_global_enum (en);
+            return;
+        }
+
         en.accept_all_children (this);
+        this.reporter.simple_note("visit_enum END", en.name);
     }
 
     /**
@@ -375,6 +401,14 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
     public override void visit_enum_value (Valadoc.Api.EnumValue eval) {
         // this.reporter.simple_note("visit_enum_value", "visit_enum_value: %s", (string) eval.name);
         eval.accept_all_children (this);
+    }
+
+    public void visit_global_enum (Valadoc.Api.Enum en) {
+        this.reporter.simple_note("visit_global_enum START", en.get_full_name());
+        var ts_en = new Typescript.Enum (en);
+        this.current_main_package.enums.add (ts_en);
+        en.accept_all_children (this);
+        this.reporter.simple_note("visit_global_enum END", en.get_full_name());
     }
 
     /**

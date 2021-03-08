@@ -10,6 +10,13 @@ public class Typescript.Interface : Typescript.Signable {
     }
 
     /**
+     * Remove the Class name from a function name
+     */
+    public string remove_namespace (string vala_full_name) {
+        return Typescript.remove_namespace(vala_full_name, this.get_name ());
+    }
+
+    /**
      * Basesd on libvaladoc/api/interface.vala
      */
     public override string build_signature (Typescript.Namespace ? root_namespace) {

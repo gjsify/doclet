@@ -10,17 +10,24 @@ public class Typescript.Method : Typescript.Signable {
     }
 
     public string get_name (Typescript.Namespace ? root_namespace, bool as_virtual = false) {
-        var name = this.m.name;
+        var name = this.m.get_full_name();
+        name = root_namespace.remove_vala_namespace(name);
+        // Remove class name if present
+        if (this.cls != null) {
+            name = this.cls.remove_namespace(name);
+        }
+        // Remove interface name if present
+        if (this.iface != null) {
+            name = this.iface.remove_namespace(name);
+        }
         if (name.has_prefix ("@")) {
             name = "/* @ */ " + name.substring (1);
         }
+
         if (this.m.is_constructor) {
-            print("\nconstructor " + name);
             var parent_name = this.get_parent_name(root_namespace);
             if (parent_name != null) {
-                print("\nparent_name " + parent_name);
                 if (name == parent_name) {
-                    // name = "constructor";
                     name = "new";
                 } else  {
                     var prefix = parent_name + ".";

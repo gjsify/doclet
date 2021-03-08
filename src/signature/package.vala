@@ -13,6 +13,9 @@ public class Typescript.Package : Typescript.Signable {
     public Vala.ArrayList<Typescript.Enum> enums = new Vala.ArrayList<Typescript.Enum> ();
     public Vala.ArrayList<Typescript.Struct> structs = new Vala.ArrayList<Typescript.Struct> ();
     public Vala.ArrayList<Typescript.ErrorDomain> error_domains = new Vala.ArrayList<Typescript.ErrorDomain> ();
+    /**
+     * Global functions of this package
+     */
     public Vala.ArrayList<Typescript.Method> functions = new Vala.ArrayList<Typescript.Method> ();
 
     public Package (Valadoc.Settings settings, Vala.CodeContext context, Typescript.GirParser gir_parser, Valadoc.Api.Package package) {
@@ -36,6 +39,10 @@ public class Typescript.Package : Typescript.Signable {
 			return false;
 		}
         return true;
+    }
+
+    public string get_name () {
+        return this.package.get_full_name();
     }
 
     public string ? get_vala_namespace () {

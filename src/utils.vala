@@ -35,4 +35,18 @@ namespace Typescript {
         }
         return result;
     }
+
+    /**
+     * Remove the Class name from a function name
+     */
+     public string remove_namespace (string full_symbol_name, string ns) {
+        var root_prefix = ns + ".";
+        string result;
+        if (full_symbol_name.has_prefix (root_prefix)) {
+            result = full_symbol_name.substring (root_prefix.length);
+        } else {
+            result = full_symbol_name;
+        }
+        return result;
+    }
 }

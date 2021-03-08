@@ -28,9 +28,11 @@ public class Typescript.Constant : Typescript.Signable {
             return "";
         }
         var ts_constant_type = new Typescript.TypeReference (this.cons.constant_type as Valadoc.Api.TypeReference);
+        signature.append ("export");
         signature.append_keyword ("const");
-
+        signature.append ("/*");
         signature.append_keyword (this.cons.accessibility.to_string ());
+        signature.append ("*/");
         signature.append (this.get_full_name (root_namespace));
         signature.append (": ", false);
         signature.append (ts_constant_type.get_signature (root_namespace));

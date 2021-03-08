@@ -18,14 +18,7 @@ public class Typescript.Namespace : Typescript.Signable {
     }
 
     public string remove_vala_namespace (string vala_full_name) {
-        var root_prefix = this.get_vala_namespace_name () + ".";
-        string result;
-        if (vala_full_name.has_prefix (root_prefix)) {
-            result = vala_full_name.substring (root_prefix.length);
-        } else {
-            result = vala_full_name;
-        }
-        return result;
+        return Typescript.remove_namespace(vala_full_name, this.get_vala_namespace_name ());
     }
 
     public bool is_root () {
