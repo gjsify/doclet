@@ -117,7 +117,7 @@ public class Typescript.Class : Typescript.Signable {
         // Default constructor TODO add parameters
         signature.append_line ("public constructor ()\n");
         foreach (var constr in constructors) {
-            var ts_constr = new Typescript.Method (constr as Valadoc.Api.Method, this, null, null, null);
+            var ts_constr = new Typescript.Method (constr as Valadoc.Api.Method, this, null, null, null, null);
             signature.append_content (ts_constr.get_signature (root_namespace));
             signature.append ("\n", false);
         }
@@ -128,7 +128,7 @@ public class Typescript.Class : Typescript.Signable {
         var static_methods = this._class.get_children_by_types ({ Valadoc.Api.NodeType.STATIC_METHOD }, false);
         signature.append_line ("// Static Methods\n");
         foreach (var m in static_methods) {
-            var ts_m = new Typescript.Method (m as Valadoc.Api.Method, this, null, null, null);
+            var ts_m = new Typescript.Method (m as Valadoc.Api.Method, this, null, null, null, null);
             signature.append_content (ts_m.get_signature (root_namespace));
             signature.append ("\n", false);
         }
@@ -139,7 +139,7 @@ public class Typescript.Class : Typescript.Signable {
         var methods = this._class.get_children_by_types ({ Valadoc.Api.NodeType.METHOD }, false);
         signature.append_line ("// Methods\n");
         foreach (var m in methods) {
-            var ts_m = new Typescript.Method (m as Valadoc.Api.Method, this, null, null, null);
+            var ts_m = new Typescript.Method (m as Valadoc.Api.Method, this, null, null, null, null);
             signature.append_content (ts_m.get_signature (root_namespace));
             signature.append ("\n", false);
         }

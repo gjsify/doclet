@@ -39,7 +39,7 @@ namespace Typescript {
     /**
      * Remove the Class name from a function name
      */
-     public string remove_namespace (string full_symbol_name, string ns) {
+    public string remove_namespace (string full_symbol_name, string ns) {
         var root_prefix = ns + ".";
         string result;
         if (full_symbol_name.has_prefix (root_prefix)) {
@@ -48,5 +48,9 @@ namespace Typescript {
             result = full_symbol_name;
         }
         return result;
+    }
+
+    public bool has_parent_namespace (string name) {
+        return name.index_of_char ('.') >= 0;
     }
 }

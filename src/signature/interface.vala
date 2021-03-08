@@ -109,7 +109,7 @@ public class Typescript.Interface : Typescript.Signable {
         foreach (var m in methods) {
             // Typescript.Interface? iface_param = null;
             // iface_param = this;
-            var ts_m = new Typescript.Method (m as Valadoc.Api.Method, null, this, null, null);
+            var ts_m = new Typescript.Method (m as Valadoc.Api.Method, null, this, null, null, null);
             signature.append_content (ts_m.get_signature (root_namespace));
             signature.append ("\n", false);
         }

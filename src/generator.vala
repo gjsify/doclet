@@ -303,14 +303,14 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
         // this.reporter.simple_note("visit_method", "visit_method: %s", (string) m.name);
         // m.accept_children ({NodeType.FORMAL_PARAMETER, NodeType.TYPE_PARAMETER}, this);
 
-        var ts_m = new Typescript.Method (m as Valadoc.Api.Method, this.current_class, this.current_interface, this.current_struct, this.current_enum);
+        var ts_m = new Typescript.Method (m as Valadoc.Api.Method, this.current_class, this.current_interface, this.current_struct, this.current_enum, this.current_error_domain);
+
 
         if (m.is_constructor) {
             this.visit_constructor (ts_m);
-            return;
         }
 
-        if (ts_m.is_global ()) {
+        if (ts_m.is_global (this.current_main_package.root_namespace)) {
             this.visit_global_function (ts_m);
         }
 

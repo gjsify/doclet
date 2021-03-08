@@ -1,20 +1,45 @@
 public class Typescript.Method : Typescript.Signable {
+    /**
+     * Original method object of Valadoc
+     */
     protected Valadoc.Api.Method _method;
+    /**
+     * Parent Class of this method
+     */
     protected Typescript.Class ? _class = null;
+    /**
+     * Parent Interface of this method
+     */
     protected Typescript.Interface ? _interface = null;
+    /**
+     * Parent Struct of this method
+     */
     protected Typescript.Struct ? _struct = null;
+    /**
+     * Parent Enum of this method
+     */
     protected Typescript.Enum ? _enum = null;
+    /**
+     * Parent Error Domain of this method
+     * In Vala Error Domains can have methods
+     */
+    protected Typescript.ErrorDomain ? _error_domain = null;
 
-    public Method (Valadoc.Api.Method m, Typescript.Class ? cls, Typescript.Interface ? iface, Typescript.Struct ? stru, Typescript.Enum ? enu) {
+    public Method (Valadoc.Api.Method m, Typescript.Class ? cls, Typescript.Interface ? iface, Typescript.Struct ? stru, Typescript.Enum ? enu, Typescript.ErrorDomain ? error_domain) {
         this._method = m;
         this._class = cls;
         this._interface = iface;
         this._struct = stru;
         this._enum = enu;
+        this._error_domain = error_domain;
     }
 
-    public bool is_global () {
-        return this._class == null && this._interface == null && this._struct == null && this._enum == null;
+    public bool is_global (Typescript.Namespace ? root_namesp) {
+        var name = this.get_name (root_namesp);
+        if (Typescript.has_parent_namespace (name)) {
+            return false;
+        }
+        return this._class == null && this._interface == null && this._struct == null && this._enum == null && this._error_domain == null;
     }
 
     public string get_name (Typescript.Namespace ? root_namespace, bool as_virtual = false) {
@@ -91,6 +116,9 @@ public class Typescript.Method : Typescript.Signable {
         if (this._enum != null) {
             return "enum";
         }
+        if (this._error_domain != null) {
+            return "errordomain";
+        }
         return "unknown";
     }
 
@@ -112,11 +140,21 @@ public class Typescript.Method : Typescript.Signable {
      * Basesd on libvaladoc/api/method.vala
      */
     protected string ? _build_signature (Typescript.Namespace ? root_namespace, bool as_virtual) {
-        var signature = new Typescript.SignatureBuilder ();
-        signature.append_keyword (this._method.accessibility.to_string ());
-
         if (as_virtual && (!this._method.is_abstract && !this._method.is_virtual)) {
             return null;
+        }
+
+        var signature = new Typescript.SignatureBuilder ();
+        var accessibility = this._method.accessibility.to_string ();
+
+
+
+        if (this.is_global (root_namespace)) {
+            if (accessibility == "public") {
+                signature.append_keyword ("export function");
+            }
+        } else {
+            signature.append_keyword (this._method.accessibility.to_string ());
         }
 
         if (!this._method.is_constructor) {
