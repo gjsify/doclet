@@ -180,6 +180,8 @@ public class Typescript.Method : Typescript.Signable {
             if (this._method.is_inline) {
                 signature.append_keyword ("/* inline */");
             }
+        } else {
+            signature.append_keyword ("static");
         }
 
         if (this._method.is_yields) {
