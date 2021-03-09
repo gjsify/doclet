@@ -12,6 +12,7 @@ public class Typescript.Package : Typescript.Signable {
     public Vala.ArrayList<Typescript.Constant> constants = new Vala.ArrayList<Typescript.Constant> ();
     public Vala.ArrayList<Typescript.Enum> enums = new Vala.ArrayList<Typescript.Enum> ();
     public Vala.ArrayList<Typescript.Struct> structs = new Vala.ArrayList<Typescript.Struct> ();
+    public Vala.ArrayList<Typescript.Delegate> delegates = new Vala.ArrayList<Typescript.Delegate> ();
     public Vala.ArrayList<Typescript.ErrorDomain> error_domains = new Vala.ArrayList<Typescript.ErrorDomain> ();
     /**
      * Global functions of this package
@@ -129,7 +130,7 @@ public class Typescript.Package : Typescript.Signable {
         return !this.is_dependency ();
     }
 
-    public string get_import_signature() {
+    public string get_import_signature () {
         string result = @"import type * as $(this.get_gir_namespace()) from './$(this.get_gir_package_name())'; // $(this.get_vala_package_name())";
         return result;
     }
@@ -152,13 +153,13 @@ public class Typescript.Package : Typescript.Signable {
         var signature = new Typescript.SignatureBuilder ();
 
         signature.append_line ("// Dependencies");
-        foreach (var dependency in this.get_dependencies()) {
+        foreach (var dependency in this.get_dependencies ()) {
             signature.append_line (dependency.get_import_signature ());
         }
 
-        signature.append_line ("// Interfaces");
-        foreach (var iface in this.ifaces) {
-            signature.append_line (iface.get_signature (root_namespace));
+        signature.append_line ("// Delegates");
+        foreach (var dele in this.delegates) {
+            signature.append_line (dele.get_signature (root_namespace));
         }
 
         signature.append_line ("// Interfaces");

@@ -94,7 +94,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
         // START
         this.reporter.simple_note ("visit_main_package START", ts_package.get_name ());
         this.current_main_package = ts_package;
-        this.current_main_package.add_dependencies(this.general_dependencies);
+        this.current_main_package.add_dependencies (this.general_dependencies);
         ts_package.package.accept_all_children (this);
 
         // END
@@ -268,7 +268,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
      * @param item a constant
      */
     public override void visit_constant (Valadoc.Api.Constant cons) {
-        var ts_cons = new Typescript.Constant (cons as Valadoc.Api.Constant);
+        var ts_cons = new Typescript.Constant (cons);
         this.current_main_package.constants.add (ts_cons);
         cons.accept_all_children (this);
     }
@@ -280,6 +280,8 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
      */
     public override void visit_delegate (Valadoc.Api.Delegate dele) {
         this.reporter.simple_note ("visit_delegate START", dele.name);
+        var ts_delegate = new Typescript.Delegate (dele);
+        this.current_main_package.delegates.add (ts_delegate);
         dele.accept_children ({ Valadoc.Api.NodeType.FORMAL_PARAMETER, Valadoc.Api.NodeType.TYPE_PARAMETER }, this);
         this.reporter.simple_note ("visit_delegate END", dele.name);
     }

@@ -30,11 +30,12 @@ public class Typescript.Interface : Typescript.Signable {
         // TODO comments builder
         signature.append ("\n/**\n", false);
         signature.append (" * @" + accessibility + "\n", false);
+        signature.append (" * @interface as abstract class\n", false);
         signature.append (" */\n", false);
 
         signature.append ("export");
-        // signature.append_keyword ("abstract class");
-        signature.append_keyword ("interface");
+        signature.append_keyword ("abstract class");
+        // signature.append_keyword ("interface");
         signature.append_symbol (this._interface);
 
         var type_parameters = this._interface.get_children_by_type (Valadoc.Api.NodeType.TYPE_PARAMETER, false);
