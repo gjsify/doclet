@@ -28,12 +28,20 @@ namespace Typescript {
         return null;
     }
 
-    public string join (string[] strings, string divider = "") {
+    public string join (string[] strings, string divider = ", ") {
         string result = "";
         foreach (var str in strings) {
             result += (str + divider);
         }
         return result;
+    }
+
+    public string join_list (Vala.List<string> strings, string divider = ", ") {
+        var strings_arr = strings.to_array ();
+        if (strings_arr != null) {
+            return Typescript.join (strings_arr, divider);
+        }
+        return "";
     }
 
     public bool contains (string[] strings, string search) {

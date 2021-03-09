@@ -43,8 +43,8 @@ public class Typescript.Package : Typescript.Signable {
     }
 
     public string get_name () {
-        return this.package.get_full_name ();
-        // return this.get_vala_package_name ();
+        // return this.package.get_full_name ();
+        return this.get_vala_package_name ();
     }
 
     public string ? get_vala_namespace () {
@@ -66,6 +66,21 @@ public class Typescript.Package : Typescript.Signable {
         if (this.source_file != null) {
             return this.source_file.package_name;
         }
+        // If this package is the target package, the package name is renamed by Valadoc to the target path or target package name
+        if (this.is_target ()) {
+            if (this.settings.source_files.length > 0) {
+                if (this.settings.source_files.length > 1) {
+                    print (@"WARNING: TODO Multiple source files found! $(Typescript.join(settings.source_files))\n");
+                }
+                var source_file_path = this.settings.source_files[0];
+                var filename = GLib.Path.get_basename (source_file_path);
+                var file_extension = ".vapi";
+                if (filename.has_suffix (file_extension)) {
+                    filename = filename.substring (0, filename.length - file_extension.length);
+                }
+                return filename;
+            }
+        }
         return this.package.get_full_name ();
     }
 
@@ -82,6 +97,10 @@ public class Typescript.Package : Typescript.Signable {
 
     public string get_gir_filename () {
         return this.get_gir_package_name () + ".gir";
+    }
+
+    public bool is_target () {
+        return this.package.name == this.settings.pkg_name;
     }
 
     /**
@@ -138,12 +157,19 @@ public class Typescript.Package : Typescript.Signable {
 
     protected Vala.SourceFile ? get_source_file () {
         var source_files = this.context.get_source_files ();
+        var vapi_path = this.get_vapi_path ();
+        var single_source_file = this.context.get_source_file (vapi_path);
+
+        if (single_source_file != null) {
+            return single_source_file;
+        }
+
         foreach (var source_file in source_files) {
-            // print (@"get_source_file: @$(source_file.package_name)");
             if (source_file.package_name == this.package.name) {
                 return source_file;
             }
         }
+
         return null;
     }
 
