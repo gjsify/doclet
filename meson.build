@@ -34,7 +34,7 @@ sources = files(
   'src/signature/typereference.vala',
   'src/doclet.vala',
   'src/generator.vala',
-  'src/girparser.vala',
+  # 'src/girparser.vala',
   'src/reporter.vala',
   'src/transformation.vala',
   'src/utils.vala',
@@ -45,7 +45,7 @@ valac = meson.get_compiler('vala')
 libvala_version = run_command(valac, '--api-version').stdout().strip()
 libvala = dependency('libvala-@0@'.format(libvala_version))
 valadoc = dependency('valadoc-@0@'.format(libvala_version))
-gxml = dependency('gxml-0.21', fallback : [ 'gxml', 'libgxml_dep' ])
+# gxml = dependency('gxml-0.21', fallback : [ 'gxml', 'libgxml_dep' ])
 
 
 dependencies = [
@@ -55,7 +55,7 @@ dependencies = [
 	dependency('libxml-2.0'),
 	dependency('gio-2.0'),
 	dependency('gee-0.8'),
-  gxml,
+  # gxml,
   libvala,
   valadoc,
   valac.find_library('posix'),

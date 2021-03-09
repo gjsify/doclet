@@ -1,6 +1,6 @@
 public class Typescript.Package : Typescript.Signable {
     protected Valadoc.Settings settings;
-    protected Typescript.GirParser gir_parser;
+    // protected Typescript.GirParser gir_parser;
     protected Vala.CodeContext context;
     protected Vala.ArrayList<Typescript.Package> dependencies = new Vala.ArrayList<Typescript.Package> ();
     protected Vala.SourceFile ? source_file = null;
@@ -19,11 +19,11 @@ public class Typescript.Package : Typescript.Signable {
      */
     public Vala.ArrayList<Typescript.Method> functions = new Vala.ArrayList<Typescript.Method> ();
 
-    public Package (Valadoc.Settings settings, Vala.CodeContext context, Typescript.GirParser gir_parser, Valadoc.Api.Package package) {
+    public Package (Valadoc.Settings settings, Vala.CodeContext context /*, Typescript.GirParser gir_parser*/, Valadoc.Api.Package package) {
         this.settings = settings;
         this.package = package;
         this.context = context;
-        this.gir_parser = gir_parser;
+        // this.gir_parser = gir_parser;
         this.source_file = this.get_source_file ();
         // Use this if we need more informations from the gir files
         // this.gir_parser.load_by_package(this);
@@ -44,6 +44,7 @@ public class Typescript.Package : Typescript.Signable {
 
     public string get_name () {
         return this.package.get_full_name ();
+        // return this.get_vala_package_name ();
     }
 
     public string ? get_vala_namespace () {
@@ -65,7 +66,7 @@ public class Typescript.Package : Typescript.Signable {
         if (this.source_file != null) {
             return this.source_file.package_name;
         }
-        return this.package.name;
+        return this.package.get_full_name ();
     }
 
     public string get_gir_package_name () {
@@ -138,6 +139,7 @@ public class Typescript.Package : Typescript.Signable {
     protected Vala.SourceFile ? get_source_file () {
         var source_files = this.context.get_source_files ();
         foreach (var source_file in source_files) {
+            // print (@"get_source_file: @$(source_file.package_name)");
             if (source_file.package_name == this.package.name) {
                 return source_file;
             }

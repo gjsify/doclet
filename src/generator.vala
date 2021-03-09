@@ -3,7 +3,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
     protected Typescript.Reporter reporter;
     protected Valadoc.Settings settings;
     protected Valadoc.Api.Tree current_tree;
-    protected Typescript.GirParser gir_parser;
+    // protected Typescript.GirParser gir_parser;
 
     protected Typescript.Package ? current_dependency_package = null;
     protected Typescript.Package ? current_main_package = null;
@@ -19,37 +19,17 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
     protected Vala.ArrayList<Typescript.Package> general_dependencies = new Vala.ArrayList<Typescript.Package> ();
     protected Vala.ArrayList<Typescript.Package> main_packages = new Vala.ArrayList<Typescript.Package> ();
 
-    public bool execute (Valadoc.Settings settings, Valadoc.Api.Tree tree, Typescript.Reporter reporter, Typescript.GirParser gir_parser) {
+    public bool execute (Valadoc.Settings settings, Valadoc.Api.Tree tree, Typescript.Reporter reporter /*, Typescript.GirParser gir_parser*/) {
         this.settings = settings;
         this.reporter = reporter;
         this.current_tree = tree;
-        this.gir_parser = gir_parser;
+        // this.gir_parser = gir_parser;
 
         tree.accept (this);
 
-        foreach (var main_package in this.main_packages) {
-            if (main_package != null && !main_package.is_ready ()) {
-                this.reporter.simple_error ("execute", "Package is not ready!");
-            }
-
-            var name = main_package.get_gir_package_name ();
-
-            this.reporter.simple_note ("write package", name);
-
-            string path = GLib.Path.build_filename (this.settings.path);
-            string filepath = GLib.Path.build_filename (path, name + ".d.ts");
-
-            DirUtils.create_with_parents (path, 0777);
-
-            var writer = new Typescript.Writer (filepath, "a+");
-            if (!writer.open ()) {
-                reporter.simple_error ("Typescript", "unable to open '%s' for writing", writer.filename);
-                return false;
-            }
-
-            var sig = main_package.get_signature (main_package.root_namespace);
-            writer.write (sig);
-        }
+        // Write packages
+        var writer = new Typescript.Writer (this.settings, this.reporter);
+        writer.write_packages (this.main_packages);
 
         // this.reporter.simple_note("execute", "execute: %s", (string) this.settings);
         return true;
@@ -79,7 +59,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
             return;
         }
 
-        var ts_package = new Typescript.Package (this.settings, this.current_tree.context, this.gir_parser, package);
+        var ts_package = new Typescript.Package (this.settings, this.current_tree.context /*, this.gir_parser*/, package);
 
         if (ts_package.is_main ()) {
             this.visit_main_package (ts_package);
