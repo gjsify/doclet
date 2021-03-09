@@ -38,7 +38,7 @@ public class Typescript.Property : Typescript.Signable {
         var ts_type = new Typescript.TypeReference (type);
         signature.append_content (ts_type.get_signature (root_namespace) /*this.prop.property_type.signature*/);
 
-        signature.append (";", false);
+        // signature.append (";", false);
 
 
         return signature.to_string ();

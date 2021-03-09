@@ -72,6 +72,14 @@ public class Typescript.Method : Typescript.Signable {
                     }
                 }
             }
+        } else {
+            var parent_name = this.get_parent_name (root_namespace);
+            if (parent_name != null) {
+                var prefix = parent_name + ".";
+                if (name.has_prefix (prefix)) {
+                    name = name.substring (prefix.length);
+                }
+            }
         }
         if (as_virtual && (this._method.is_abstract || this._method.is_virtual)) {
             name = "vfunc_" + name;
@@ -230,7 +238,7 @@ public class Typescript.Method : Typescript.Signable {
             signature.append ("*/");
         }
 
-        signature.append (";", false);
+        // signature.append (";", false);
 
         return signature.to_string ();
     }

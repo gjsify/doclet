@@ -236,6 +236,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
         this.reporter.simple_note ("visit_struct START", st.name);
         var ts_struct = new Typescript.Struct (st);
         this.current_struct = ts_struct;
+        this.current_main_package.structs.add (ts_struct);
         st.accept_all_children (this);
         this.reporter.simple_note ("visit_struct END", st.name);
         this.current_struct = null;
