@@ -14,7 +14,6 @@ sources = files(
   'src/signature/class.vala',
   'src/signature/constant.vala',
   'src/signature/delegate.vala',
-  'src/signature/dependency.vala',
   'src/signature/enum.vala',
   'src/signature/enumvalue.vala',
   'src/signature/errorcode.vala',

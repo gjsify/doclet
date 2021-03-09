@@ -49,6 +49,12 @@ And build the Typescript Type Definition files:
 npm run types
 ```
 
+## VAPI's
+
+```bash
+sudo apt install libglib2.0-dev libgtk-3-dev
+```
+
 ## Visual Studio Code
 
 As a Typescript developer you don't want to code without autocompletion - [You also have that with Vala](https://wiki.gnome.org/Projects/Vala/Tools/VisualStudioCode).
@@ -76,7 +82,6 @@ Build:
 meson -Dprefix=/usr/local build
 ```
 
-
 ## See also
 
-* https://gitlab.gnome.org/GNOME/gobject-introspection/-/blob/master/giscanner/docwriter.py#L1116
+- https://gitlab.gnome.org/GNOME/gobject-introspection/-/blob/master/giscanner/docwriter.py#L1116

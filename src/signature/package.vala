@@ -128,11 +128,19 @@ public class Typescript.Package : Typescript.Signable {
         if (pkg == null) {
             return;
         }
+        // Do not add yourself has a dependency
+        print (@"\n\npkg.get_name: $(pkg.get_name()) -- this.get_name (): $(this.get_name ())\n\n");
+        if (pkg.get_name () == this.get_name ()) {
+            return;
+        }
+
         this.dependencies.add (pkg);
     }
 
     public void add_dependencies (Vala.ArrayList<Typescript.Package> packages) {
-        this.dependencies.add_all (packages);
+        foreach (var package in packages) {
+            this.add_dependency (package);
+        }
     }
 
     public Vala.ArrayList<Typescript.Package> get_dependencies () {
