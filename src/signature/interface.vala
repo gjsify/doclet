@@ -100,7 +100,7 @@ public class Typescript.Interface : Typescript.Signable {
             var prop = (Valadoc.Api.Property)_prop;
             var ts_prop = new Typescript.Property (prop);
             signature.append_content (ts_prop.get_signature (root_namespace));
-            signature.append ("\n", false);
+            signature.append (";\n", false);
         }
 
         //
@@ -112,7 +112,7 @@ public class Typescript.Interface : Typescript.Signable {
             // iface_param = this;
             var ts_m = new Typescript.Method (m as Valadoc.Api.Method, null, this, null, null, null);
             signature.append_content (ts_m.get_signature (root_namespace));
-            signature.append ("\n", false);
+            signature.append (";\n", false);
         }
 
         // END Body
