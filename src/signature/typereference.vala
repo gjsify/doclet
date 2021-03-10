@@ -55,7 +55,7 @@ public class Typescript.TypeReference : Typescript.Signable {
     /**
      * Basesd on libvaladoc/api/typereference.vala
      */
-    protected override string build_signature () {
+    protected string _build_signature () {
         var signature = new Typescript.SignatureBuilder ();
         if (this.type_ref.is_dynamic) {
             signature.append_keyword ("/* dynamic */");
@@ -95,8 +95,15 @@ public class Typescript.TypeReference : Typescript.Signable {
         }
 
         if (this.type_ref.is_nullable) {
-            signature.append ("?", false);
+            signature.append ("| null");
         }
         return signature.to_string ();
+    }
+
+    /**
+     * Basesd on libvaladoc/api/typereference.vala
+     */
+    protected override string build_signature () {
+        return this._build_signature ();
     }
 }

@@ -185,7 +185,7 @@ public class Typescript.Method : Typescript.Signable {
             } else if (this._method.is_class) {
                 signature.append_keyword ("/* class */");
             } else if (this._method.is_abstract) {
-                signature.append_keyword ("abstract");
+                signature.append_keyword ("/* abstract */");
             } else if (this._method.is_override) {
                 signature.append_keyword ("/* override */");
             } else if (this._method.is_virtual) {

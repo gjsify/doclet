@@ -114,6 +114,7 @@ namespace Typescript {
 
         // TODO
         BASIC_TYPE_MAP.set ("_string", "string");
+        BASIC_TYPE_MAP.set ("va_list", "any");
 
 
         if (BASIC_TYPE_MAP.has_key (name)) {

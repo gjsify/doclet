@@ -13,9 +13,9 @@ public class Typescript.Property : Typescript.Signable {
         var signature = new Typescript.SignatureBuilder ();
         signature.append_keyword (this.prop.accessibility.to_string ());
         if (this.prop.is_abstract) {
-            signature.append_keyword ("abstract");
+            signature.append_keyword ("/* abstract */");
         } else if (this.prop.is_override) {
-            signature.append_keyword ("override");
+            signature.append_keyword ("/* override */");
         } else if (this.prop.is_virtual) {
             signature.append_keyword ("/* virtual */");
         }

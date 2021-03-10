@@ -17,7 +17,7 @@ public class Typescript.Signal : Typescript.Signable {
         var accessibility = this._signal.accessibility.to_string ();
         var keyword = "";
         if (this._signal.is_virtual && this._class.is_abstract ()) {
-            keyword = "abstract ";
+            keyword = "/* abstract */";
         }
         signature.append_line (@"$(accessibility) $(keyword) connect(sigName: \"$(name)\", callback: ((obj: $(cl), $(parameters)) => $(return_type) )): number;");
         signature.append_line (@"$(accessibility) $(keyword) connect_after(sigName: \"$(name)\", callback: ((obj: $(cl), $(parameters)) => $(return_type) )): number;");

@@ -36,6 +36,20 @@ public class Typescript.Class : Typescript.Signable {
         return Typescript.remove_namespace (vala_full_name, this.get_name ());
     }
 
+    protected string get_implementations (Vala.Collection<Valadoc.Api.TypeReference> interfaces) {
+        var result = "";
+        var first = true;
+        foreach (Valadoc.Api.Item implemented_interface in interfaces) {
+            if (!first) {
+                result += ", ";
+            }
+            var ts_implemented_interface = new Typescript.TypeReference (this.root_namespace, implemented_interface as Valadoc.Api.TypeReference);
+            result += ts_implemented_interface.get_signature ();
+            first = false;
+        }
+        return result;
+    }
+
     /**
      * Basesd on libvaladoc/api/class.vala
      */
@@ -43,9 +57,16 @@ public class Typescript.Class : Typescript.Signable {
         var signature = new Typescript.SignatureBuilder ();
         var accessibility = this._class.accessibility.to_string (); // "public" or "private"
         var name = this.get_name ();
+        var interfaces = this._class.get_implemented_interface_list ();
 
         if (name == "GLib.Error") {
-            return "// class GLib.Error ...";
+            return "// GLib.Error";
+        }
+
+        if (interfaces.size > 0) {
+            // See https://stackoverflow.com/a/54084281/1465919
+            signature.append_line ("\n// For intellisense only, let's Typescript think the next class has all implementations");
+            signature.append_line (@"interface $(name) extends $(this.get_implementations(interfaces)) {}");
         }
 
         // TODO comments builder
@@ -80,10 +101,11 @@ public class Typescript.Class : Typescript.Signable {
         }
 
         //
-        // Extended classes
+        // Extended class
         //
         bool first = true;
         if (this._class.base_type != null) {
+
             signature.append ("extends");
 
             var ts_base_type = new Typescript.TypeReference (this.root_namespace, this._class.base_type as Valadoc.Api.TypeReference);
@@ -95,20 +117,9 @@ public class Typescript.Class : Typescript.Signable {
         //
         // Implemented interfaces
         //
-        var interfaces = this._class.get_implemented_interface_list ();
+
         if (interfaces.size > 0) {
-            signature.append ("implements");
-
-            first = true;
-
-            foreach (Valadoc.Api.Item implemented_interface in interfaces) {
-                if (!first) {
-                    signature.append (",", false);
-                }
-                var ts_implemented_interface = new Typescript.TypeReference (this.root_namespace, implemented_interface as Valadoc.Api.TypeReference);
-                signature.append_content (ts_implemented_interface.get_signature ());
-                first = false;
-            }
+            signature.append (@"implements $(this.get_implementations(interfaces))");
         }
 
         // START Body
