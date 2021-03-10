@@ -1,14 +1,15 @@
 public class Typescript.Property : Typescript.Signable {
     protected Valadoc.Api.Property prop;
 
-    public Property (Valadoc.Api.Property prop) {
+    public Property (Typescript.Namespace ? root_namespace, Valadoc.Api.Property prop) {
+        this.root_namespace = root_namespace;
         this.prop = prop;
     }
 
     /**
      * Basesd on libvaladoc/api/property.vala
      */
-    protected override string build_signature (Typescript.Namespace ? root_namespace) {
+    protected override string build_signature () {
         var signature = new Typescript.SignatureBuilder ();
         signature.append_keyword (this.prop.accessibility.to_string ());
         if (this.prop.is_abstract) {
@@ -35,8 +36,8 @@ public class Typescript.Property : Typescript.Signable {
         signature.append (":", false);
 
         var type = this.prop.property_type;
-        var ts_type = new Typescript.TypeReference (type);
-        signature.append_content (ts_type.get_signature (root_namespace) /*this.prop.property_type.signature*/);
+        var ts_type = new Typescript.TypeReference (this.root_namespace, type);
+        signature.append_content (ts_type.get_signature () /*this.prop.property_type.signature*/);
 
         // signature.append (";", false);
 

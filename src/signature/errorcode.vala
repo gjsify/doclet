@@ -1,7 +1,8 @@
 public class Typescript.ErrorCode : Typescript.Signable {
     protected Valadoc.Api.ErrorCode _error_code;
 
-    public ErrorCode (Valadoc.Api.ErrorCode error_code) {
+    public ErrorCode (Typescript.Namespace ? root_namespace, Valadoc.Api.ErrorCode error_code) {
+        this.root_namespace = root_namespace;
         this._error_code = error_code;
     }
 
@@ -22,7 +23,7 @@ public class Typescript.ErrorCode : Typescript.Signable {
     /**
      * Basesd on libvaladoc/api/errorcode.vala
      */
-    protected override string build_signature (Typescript.Namespace ? root_namespace) {
+    protected override string build_signature () {
         var signature = new Typescript.SignatureBuilder ();
         signature.append_symbol (this._error_code);
         return signature.to_string ();

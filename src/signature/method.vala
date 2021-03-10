@@ -25,7 +25,8 @@ public class Typescript.Method : Typescript.Signable {
      */
     protected Typescript.ErrorDomain ? _error_domain = null;
 
-    public Method (Valadoc.Api.Method m, Typescript.Class ? cls, Typescript.Interface ? iface, Typescript.Struct ? stru, Typescript.Enum ? enu, Typescript.ErrorDomain ? error_domain) {
+    public Method (Typescript.Namespace ? root_namespace, Valadoc.Api.Method m, Typescript.Class ? cls, Typescript.Interface ? iface, Typescript.Struct ? stru, Typescript.Enum ? enu, Typescript.ErrorDomain ? error_domain) {
+        this.root_namespace = root_namespace;
         this._method = m;
         this._class = cls;
         this._interface = iface;
@@ -34,25 +35,25 @@ public class Typescript.Method : Typescript.Signable {
         this._error_domain = error_domain;
     }
 
-    public bool is_global (Typescript.Namespace ? root_namesp) {
-        var name = this.get_name (root_namesp);
+    public bool is_global () {
+        var name = this.get_name ();
         if (Typescript.has_parent_namespace (name)) {
             return false;
         }
         return this._class == null && this._interface == null && this._struct == null && this._enum == null && this._error_domain == null;
     }
 
-    public string get_name (Typescript.Namespace ? root_namespace, bool as_virtual = false) {
+    public string get_name (bool as_virtual = false) {
         var name = this._method.get_full_name ();
         bool has_vala_at_prefix = false;
         name = root_namespace.remove_vala_namespace (name);
         // Remove class name if present
         if (this._class != null) {
-            name = this._class.remove_namespace (root_namespace, name);
+            name = this._class.remove_namespace (name);
         }
         // Remove interface name if present
         if (this._interface != null) {
-            name = this._interface.remove_namespace (root_namespace, name);
+            name = this._interface.remove_namespace (name);
         }
         if (name.has_prefix ("@")) {
             has_vala_at_prefix = true;
@@ -60,7 +61,7 @@ public class Typescript.Method : Typescript.Signable {
         }
 
         if (this._method.is_constructor) {
-            var parent_name = this.get_parent_name (root_namespace);
+            var parent_name = this.get_parent_name ();
             if (parent_name != null) {
                 if (name == parent_name) {
                     name = "new";
@@ -73,7 +74,7 @@ public class Typescript.Method : Typescript.Signable {
                 }
             }
         } else {
-            var parent_name = this.get_parent_name (root_namespace);
+            var parent_name = this.get_parent_name ();
             if (parent_name != null) {
                 var prefix = parent_name + ".";
                 if (name.has_prefix (prefix)) {
@@ -95,18 +96,18 @@ public class Typescript.Method : Typescript.Signable {
     /**
      * Name of the class or interface in which this method is defined
      */
-    public string ? get_parent_name (Typescript.Namespace ? root_namespace) {
+    public string ? get_parent_name () {
         if (this._interface != null) {
-            return this._interface.get_name (root_namespace);
+            return this._interface.get_name ();
         }
         if (this._class != null) {
-            return this._class.get_name (root_namespace);
+            return this._class.get_name ();
         }
         if (this._struct != null) {
-            return this._struct.get_name (root_namespace);
+            return this._struct.get_name ();
         }
         if (this._enum != null) {
-            return this._enum.get_name (root_namespace);
+            return this._enum.get_name ();
         }
         return null;
     }
@@ -130,24 +131,24 @@ public class Typescript.Method : Typescript.Signable {
         return "unknown";
     }
 
-    public string get_return_type (Typescript.Namespace ? root_namespace) {
+    public string get_return_type () {
         if (this._method.is_constructor) {
-            var parent = this.get_parent_name (root_namespace);
+            var parent = this.get_parent_name ();
             if (parent != null) {
                 return parent;
             } else {
-                GLib.stderr.printf (@"Parent for constructor of $(this.get_parent_type()) \"$(this.get_name(root_namespace))\" not found!\n");
+                GLib.stderr.printf (@"Parent for constructor of $(this.get_parent_type()) \"$(this.get_name())\" not found!\n");
             }
         }
-        var ts_return_type = new Typescript.TypeReference (this._method.return_type as Valadoc.Api.TypeReference);
-        var result = ts_return_type.get_signature (root_namespace);
+        var ts_return_type = new Typescript.TypeReference (this.root_namespace, this._method.return_type as Valadoc.Api.TypeReference);
+        var result = ts_return_type.get_signature ();
         return result;
     }
 
     /**
      * Basesd on libvaladoc/api/method.vala
      */
-    protected string ? _build_signature (Typescript.Namespace ? root_namespace, bool as_virtual) {
+    protected string ? _build_signature (bool as_virtual) {
         if (as_virtual && (!this._method.is_abstract && !this._method.is_virtual)) {
             return null;
         }
@@ -157,7 +158,7 @@ public class Typescript.Method : Typescript.Signable {
 
 
 
-        if (this.is_global (root_namespace)) {
+        if (this.is_global ()) {
             if (accessibility == "public") {
                 signature.append_keyword ("export function");
             }
@@ -188,18 +189,18 @@ public class Typescript.Method : Typescript.Signable {
             signature.append_keyword ("async");
         }
 
-        signature.append (this.get_name (root_namespace, as_virtual));
+        signature.append (this.get_name (as_virtual));
 
         var type_parameters = this._method.get_children_by_type (Valadoc.Api.NodeType.TYPE_PARAMETER, false);
         if (type_parameters.size > 0) {
             signature.append ("<", false);
             bool first = true;
             foreach (Valadoc.Api.Item param in type_parameters) {
-                var ts_param = new Typescript.TypeParameter (param as Valadoc.Api.TypeParameter);
+                var ts_param = new Typescript.TypeParameter (this.root_namespace, param as Valadoc.Api.TypeParameter);
                 if (!first) {
                     signature.append (",", false);
                 }
-                signature.append_content (ts_param.get_signature (root_namespace), false);
+                signature.append_content (ts_param.get_signature (), false);
                 first = false;
             }
             signature.append (">", false);
@@ -209,11 +210,11 @@ public class Typescript.Method : Typescript.Signable {
 
         bool first = true;
         foreach (Valadoc.Api.Node param in this._method.get_children_by_type (Valadoc.Api.NodeType.FORMAL_PARAMETER, false)) {
-            var ts_param = new Typescript.Parameter (param as Valadoc.Api.Parameter);
+            var ts_param = new Typescript.Parameter (this.root_namespace, param as Valadoc.Api.Parameter);
             if (!first) {
                 signature.append (",", false);
             }
-            signature.append_content (ts_param.get_signature (root_namespace), !first);
+            signature.append_content (ts_param.get_signature (), !first);
             first = false;
         }
 
@@ -223,7 +224,7 @@ public class Typescript.Method : Typescript.Signable {
         // Return type
         //
         signature.append (":", false);
-        signature.append_content (this.get_return_type (root_namespace));
+        signature.append_content (this.get_return_type ());
 
         var exceptions = this._method.get_children_by_types ({ Valadoc.Api.NodeType.ERROR_DOMAIN, Valadoc.Api.NodeType.CLASS });
         if (exceptions.size > 0) {
@@ -248,14 +249,14 @@ public class Typescript.Method : Typescript.Signable {
     /**
      * Basesd on libvaladoc/api/method.vala
      */
-    protected override string build_signature (Typescript.Namespace ? root_namespace) {
+    protected override string build_signature () {
         var signature = new Typescript.SignatureBuilder ();
-        var normal = this._build_signature (root_namespace, false);
+        var normal = this._build_signature (false);
         if (normal != null) {
             signature.append_line (normal);
         }
 
-        var virtual = this._build_signature (root_namespace, true);
+        var virtual = this._build_signature (true);
         if (virtual != null) {
             signature.append_line (virtual);
         }

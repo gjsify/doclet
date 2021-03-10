@@ -1,7 +1,8 @@
 public class Typescript.EnumValue : Typescript.Signable {
     protected Valadoc.Api.EnumValue _enum_value;
 
-    public EnumValue (Valadoc.Api.EnumValue enum_value) {
+    public EnumValue (Typescript.Namespace ? root_namespace, Valadoc.Api.EnumValue enum_value) {
+        this.root_namespace = root_namespace;
         this._enum_value = enum_value;
     }
 
@@ -13,7 +14,7 @@ public class Typescript.EnumValue : Typescript.Signable {
     /**
      * Basesd on libvaladoc/api/enumvalue.vala
      */
-    protected override string build_signature (Typescript.Namespace ? root_namespace) {
+    protected override string build_signature () {
         var signature = new Typescript.SignatureBuilder ();
         signature.append_symbol (this._enum_value);
 

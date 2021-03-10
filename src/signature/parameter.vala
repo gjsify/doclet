@@ -1,7 +1,8 @@
 public class Typescript.Parameter : Typescript.Signable {
     protected Valadoc.Api.Parameter param;
 
-    public Parameter (Valadoc.Api.Parameter param) {
+    public Parameter (Typescript.Namespace ? root_namespace, Valadoc.Api.Parameter param) {
+        this.root_namespace = root_namespace;
         this.param = param;
     }
 
@@ -19,7 +20,7 @@ public class Typescript.Parameter : Typescript.Signable {
     /**
      * Basesd on libvaladoc/api/parameter.vala
      */
-    protected override string build_signature (Typescript.Namespace ? root_namespace) {
+    protected override string build_signature () {
         var signature = new Typescript.SignatureBuilder ();
         if (this.param.ellipsis) {
             signature.append ("...args: any[]");
@@ -34,8 +35,8 @@ public class Typescript.Parameter : Typescript.Signable {
             signature.append (":");
 
             var type = this.param.parameter_type;
-            var ts_type = new Typescript.TypeReference (type);
-            signature.append_content (ts_type.get_signature (root_namespace));
+            var ts_type = new Typescript.TypeReference (this.root_namespace, type);
+            signature.append_content (ts_type.get_signature ());
 
 
             if (this.param.has_default_value) {

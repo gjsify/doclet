@@ -1,15 +1,16 @@
 public class Typescript.Attribute : Typescript.Signable {
     protected Valadoc.Api.Attribute attr;
 
-    public Attribute (Valadoc.Api.Attribute attr) {
+    public Attribute (Typescript.Namespace ? root_namespace, Valadoc.Api.Attribute attr) {
+        this.root_namespace = root_namespace;
         this.attr = attr;
     }
 
     /**
      * Basesd on libvaladoc/api/attribute.vala
      */
-	protected override string build_signature (Typescript.Namespace? root_namespace) {
-        var signature = new Typescript.SignatureBuilder();
+    protected override string build_signature () {
+        var signature = new Typescript.SignatureBuilder ();
 
         var attr = (Vala.Attribute) this.attr.data;
 

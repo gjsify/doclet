@@ -18,11 +18,11 @@ public class Typescript.Namespace : Typescript.Signable {
     }
 
     public string remove_vala_namespace (string vala_full_name) {
-        return Typescript.remove_namespace(vala_full_name, this.get_vala_namespace_name ());
+        return Typescript.remove_namespace (vala_full_name, this.get_vala_namespace_name ());
     }
 
     public bool is_root () {
-        var ns_str = this.get_signature (null);
+        var ns_str = this.get_signature ();
         var result = ns_str.index_of_char ('.') <= -1;
         return result;
     }
@@ -30,7 +30,7 @@ public class Typescript.Namespace : Typescript.Signable {
     /**
      * Basesd on libvaladoc/api/Namespace.vala
      */
-    protected override string build_signature (Typescript.Namespace ? root_namespace) {
+    protected override string build_signature () {
         var signature = new Typescript.SignatureBuilder ();
         signature.append (this.get_vala_namespace_name (), false);
         return signature.to_string ();

@@ -5,7 +5,6 @@ public class Typescript.Package : Typescript.Signable {
     protected Vala.ArrayList<Typescript.Package> dependencies = new Vala.ArrayList<Typescript.Package> ();
     protected Vala.SourceFile ? source_file = null;
     public Valadoc.Api.Package package;
-    public Typescript.Namespace ? root_namespace = null;
     public Typescript.Namespace ? current_namespace = null;
     public Vala.ArrayList<Typescript.Class> classes = new Vala.ArrayList<Typescript.Class> ();
     public Vala.ArrayList<Typescript.Interface> ifaces = new Vala.ArrayList<Typescript.Interface> ();
@@ -27,6 +26,14 @@ public class Typescript.Package : Typescript.Signable {
         this.source_file = this.get_source_file ();
         // Use this if we need more informations from the gir files
         // this.gir_parser.load_by_package(this);
+    }
+
+    public void set_root_namespace (Typescript.Namespace ? root_namespace) {
+        this.root_namespace = root_namespace;
+    }
+
+    public Typescript.Namespace ? get_root_namespace () {
+        return this.root_namespace;
     }
 
     public bool is_ready () {
@@ -185,7 +192,7 @@ public class Typescript.Package : Typescript.Signable {
      * Basesd on libvaladoc/api/package.vala
      * @note You need to passt "--deps" to valadoc to get dependencies, TODO not working?
      */
-    protected override string build_signature (Typescript.Namespace ? root_namespace) {
+    protected override string build_signature () {
         var signature = new Typescript.SignatureBuilder ();
 
         signature.append_line ("// Dependencies");
@@ -195,42 +202,42 @@ public class Typescript.Package : Typescript.Signable {
 
         signature.append_line ("// Delegates");
         foreach (var dele in this.delegates) {
-            signature.append_line (dele.get_signature (root_namespace));
+            signature.append_line (dele.get_signature ());
         }
 
         signature.append_line ("// Interfaces");
         foreach (var iface in this.ifaces) {
-            signature.append_line (iface.get_signature (root_namespace));
+            signature.append_line (iface.get_signature ());
         }
 
         signature.append_line ("// Classes");
         foreach (var cls in this.classes) {
-            signature.append_line (cls.get_signature (root_namespace));
+            signature.append_line (cls.get_signature ());
         }
 
         signature.append_line ("// Constants");
         foreach (var constant in this.constants) {
-            signature.append_line (constant.get_signature (root_namespace));
+            signature.append_line (constant.get_signature ());
         }
 
         signature.append_line ("// Enums");
         foreach (var enm in this.enums) {
-            signature.append_line (enm.get_signature (root_namespace));
+            signature.append_line (enm.get_signature ());
         }
 
         signature.append_line ("// Structs");
         foreach (var strct in this.structs) {
-            signature.append_line (strct.get_signature (root_namespace));
+            signature.append_line (strct.get_signature ());
         }
 
         signature.append_line ("// Error Domains");
         foreach (var error_domain in this.error_domains) {
-            signature.append_line (error_domain.get_signature (root_namespace));
+            signature.append_line (error_domain.get_signature ());
         }
 
         signature.append_line ("// Global functions");
         foreach (var func in this.functions) {
-            signature.append_line (func.get_signature (root_namespace));
+            signature.append_line (func.get_signature ());
         }
 
         return signature.to_string ();

@@ -39,7 +39,7 @@ public class Typescript.Writer {
             return false;
         }
 
-        var sig = package.get_signature (package.root_namespace);
+        var sig = package.get_signature ();
         this.write (sig);
         return true;
     }

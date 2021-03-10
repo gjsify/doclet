@@ -1,7 +1,8 @@
 public class Typescript.Field : Typescript.Signable {
     protected Valadoc.Api.Field field;
 
-    public Field (Valadoc.Api.Field field) {
+    public Field (Typescript.Namespace ? root_namespace, Valadoc.Api.Field field) {
+        this.root_namespace = root_namespace;
         this.field = field;
     }
 
@@ -12,7 +13,7 @@ public class Typescript.Field : Typescript.Signable {
     /**
      * Basesd on libvaladoc/api/field.vala
      */
-    protected override string build_signature (Typescript.Namespace ? root_namespace) {
+    protected override string build_signature () {
         var signature = new Typescript.SignatureBuilder ();
 
         var accessibility = this.field.accessibility.to_string ();
@@ -32,8 +33,8 @@ public class Typescript.Field : Typescript.Signable {
         signature.append (this.get_name ());
         signature.append (":");
 
-        var ts_field_type = new Typescript.TypeReference (this.field.field_type as Valadoc.Api.TypeReference);
-        signature.append_content (ts_field_type.get_signature (root_namespace));
+        var ts_field_type = new Typescript.TypeReference (this.root_namespace, this.field.field_type as Valadoc.Api.TypeReference);
+        signature.append_content (ts_field_type.get_signature ());
 
         return signature.to_string ();
     }
