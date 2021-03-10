@@ -136,7 +136,7 @@ public class Typescript.Package : Typescript.Signable {
             return;
         }
         // Do not add yourself has a dependency
-        print (@"\n\npkg.get_name: $(pkg.get_name()) -- this.get_name (): $(this.get_name ())\n\n");
+        // print (@"\n\npkg.get_name: $(pkg.get_name()) -- this.get_name (): $(this.get_name ())\n\n");
         if (pkg.get_name () == this.get_name ()) {
             return;
         }
