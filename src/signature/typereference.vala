@@ -11,8 +11,7 @@ public class Typescript.TypeReference : Typescript.Signable {
             type = "void";
         } else if (this.type_ref.data_type is Valadoc.Api.Symbol) {
             var symbol = this.type_ref.data_type as Valadoc.Api.Symbol;
-            var type_full_name = symbol.get_full_name ();
-            type = root_namespace.remove_vala_namespace (type_full_name);
+            type = this.get_name_from_symbol (root_namespace, symbol);
             // type = (this.type_ref.data.to_string()); // => Gtk.Widget
         } else if (this.type_ref.data_type is Valadoc.Api.TypeReference) {
             var ts_data_type = new Typescript.TypeReference (this.type_ref.data_type as Valadoc.Api.TypeReference);
@@ -24,6 +23,27 @@ public class Typescript.TypeReference : Typescript.Signable {
         }
         type = Typescript.transform_type (type);
         return type;
+    }
+
+    protected string get_name_from_symbol (Typescript.Namespace ? root_namespace, Valadoc.Api.Symbol symbol) {
+        if (symbol is Valadoc.Api.Class) {
+            var ts_symbol = new Typescript.Class (symbol as Valadoc.Api.Class);
+            return ts_symbol.get_name (root_namespace);
+        }
+        if (symbol is Valadoc.Api.Interface) {
+            var ts_symbol = new Typescript.Interface (symbol as Valadoc.Api.Interface);
+            return ts_symbol.get_name (root_namespace);
+        }
+        if (symbol is Valadoc.Api.Struct) {
+            var ts_symbol = new Typescript.Struct (symbol as Valadoc.Api.Struct);
+            return ts_symbol.get_name (root_namespace);
+        }
+        if (symbol is Valadoc.Api.Enum) {
+            var ts_symbol = new Typescript.Enum (symbol as Valadoc.Api.Enum);
+            return ts_symbol.get_name (root_namespace);
+        }
+        var type_full_name = symbol.get_full_name ();
+        return root_namespace.remove_vala_namespace (type_full_name);
     }
 
     /**
@@ -43,9 +63,13 @@ public class Typescript.TypeReference : Typescript.Signable {
             signature.append_keyword ("/* unowned */");
         }
 
+        if (this.type_ref.data_type is Valadoc.Api.Symbol) {
+            var valadoc_type = this.type_ref.data_type.get_type ().name ();
+            signature.append (@"/* $(valadoc_type) */");
+        }
+
         // Type
         var type = this.get_name (root_namespace);
-
         signature.append (type);
 
         var type_arguments = this.type_ref.get_type_arguments ();
