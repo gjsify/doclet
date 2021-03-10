@@ -2,10 +2,10 @@ public class Typescript.Signal : Typescript.Signable {
     protected Valadoc.Api.Signal _signal;
     protected Typescript.Class _class;
 
-    public Signal (Typescript.Namespace ? root_namespace, Valadoc.Api.Signal sig, Typescript.Class cl) {
+    public Signal (Typescript.Namespace ? root_namespace, Valadoc.Api.Signal sig, Typescript.Class _class) {
         this.root_namespace = root_namespace;
         this._signal = sig;
-        this._class = cl;
+        this._class = _class;
     }
 
     public string get_signal_methods () {
@@ -16,7 +16,7 @@ public class Typescript.Signal : Typescript.Signable {
         var return_type = this.get_return_type ();
         var accessibility = this._signal.accessibility.to_string ();
         var keyword = "";
-        if (this._signal.is_virtual) {
+        if (this._signal.is_virtual && this._class.is_abstract ()) {
             keyword = "abstract ";
         }
         signature.append_line (@"$(accessibility) $(keyword) connect(sigName: \"$(name)\", callback: ((obj: $(cl), $(parameters)) => $(return_type) )): number;");

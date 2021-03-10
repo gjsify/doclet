@@ -58,11 +58,19 @@ namespace Typescript {
      */
     public string remove_namespace (string full_symbol_name, string ns) {
         var root_prefix = ns + ".";
-        string result;
+        string result = full_symbol_name;
+
+        if (full_symbol_name == null) {
+            stderr.printf ("WARNING: full_symbol_name is null!");
+            return result;
+        }
+        if (ns == null) {
+            stderr.printf ("WARNING: namespace is null!");
+            return result;
+        }
+
         if (full_symbol_name.has_prefix (root_prefix)) {
             result = full_symbol_name.substring (root_prefix.length);
-        } else {
-            result = full_symbol_name;
         }
         return result;
     }

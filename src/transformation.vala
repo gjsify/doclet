@@ -1,4 +1,7 @@
 namespace Typescript {
+
+    public const string RESERVED_RENAME_PREFIX = "_";
+
     public const string[] RESERVED_VARIABLE_NAMES = {
         "in",
         "function",
@@ -18,7 +21,7 @@ namespace Typescript {
         "this"
     };
 
-    public const string[] RESERVED_CLASS_NAMES = {
+    public const string[] RESERVED_SYMBOL_NAMES = {
         "break",
         "boolean",
         "case",
@@ -72,8 +75,8 @@ namespace Typescript {
         return Typescript.contains (RESERVED_VARIABLE_NAMES, name);
     }
 
-    public bool is_reserved_class_name (string name) {
-        return Typescript.contains (RESERVED_CLASS_NAMES, name);
+    public bool is_reserved_symbol_name (string name) {
+        return Typescript.contains (RESERVED_SYMBOL_NAMES, name);
     }
 
     // See https://wiki.gnome.org/Projects/Vala/Manual/Types
@@ -108,6 +111,10 @@ namespace Typescript {
 
         // reference-types
         BASIC_TYPE_MAP.set ("string", "string");
+
+        // TODO
+        BASIC_TYPE_MAP.set ("_string", "string");
+
 
         if (BASIC_TYPE_MAP.has_key (name)) {
             return BASIC_TYPE_MAP.get (name);

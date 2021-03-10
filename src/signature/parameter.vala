@@ -12,7 +12,7 @@ public class Typescript.Parameter : Typescript.Signable {
             name = name.substring (1);
         }
         if (Typescript.is_reserved_variable_name (name)) {
-            return "_" + name;
+            return Typescript.RESERVED_RENAME_PREFIX + name;
         }
         return name;
     }

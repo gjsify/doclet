@@ -127,11 +127,6 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
         }
 
         ns.accept_all_children (this);
-
-        // if (ns != null && ns.get_full_name () != null) {
-
-        // }
-
         // this.reporter.simple_note ("visit_namespace END", ns.get_full_name ());
     }
 
@@ -145,7 +140,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 
         var ts_iface = new Typescript.Interface (this.current_main_package.get_root_namespace (), iface);
         this.current_interface = ts_iface;
-        this.current_main_package.ifaces.add (ts_iface);
+        this.current_main_package.ifaces.set (ts_iface.get_name (), ts_iface);
 
         iface.accept_all_children (this);
 
@@ -182,7 +177,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
         // this.reporter.simple_note ("visit_class START", cl.name);
         var ts_class = new Typescript.Class (this.current_main_package.get_root_namespace (), cl);
         this.current_class = ts_class;
-        this.current_main_package.classes.add (ts_class);
+        this.current_main_package.classes.set (ts_class.get_name (), ts_class);
 
         cl.accept_all_children (this);
 
@@ -217,7 +212,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
         // this.reporter.simple_note ("visit_struct START", st.name);
         var ts_struct = new Typescript.Struct (this.current_main_package.get_root_namespace (), st);
         this.current_struct = ts_struct;
-        this.current_main_package.structs.add (ts_struct);
+        this.current_main_package.structs.set (ts_struct.get_name (), ts_struct);
         st.accept_all_children (this);
         // this.reporter.simple_note ("visit_struct END", st.name);
         this.current_struct = null;
@@ -251,7 +246,8 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
      */
     public override void visit_constant (Valadoc.Api.Constant cons) {
         var ts_cons = new Typescript.Constant (this.current_main_package.get_root_namespace (), cons);
-        this.current_main_package.constants.add (ts_cons);
+        // this.reporter.simple_note ("visit_constant", ts_cons.get_name ());
+        this.current_main_package.constants.set (ts_cons.get_name (), ts_cons);
         cons.accept_all_children (this);
     }
 
@@ -263,7 +259,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
     public override void visit_delegate (Valadoc.Api.Delegate dele) {
         // this.reporter.simple_note ("visit_delegate START", dele.name);
         var ts_delegate = new Typescript.Delegate (this.current_main_package.get_root_namespace (), dele);
-        this.current_main_package.delegates.add (ts_delegate);
+        this.current_main_package.delegates.set (ts_delegate.get_name (), ts_delegate);
         dele.accept_children ({ Valadoc.Api.NodeType.FORMAL_PARAMETER, Valadoc.Api.NodeType.TYPE_PARAMETER }, this);
         // this.reporter.simple_note ("visit_delegate END", dele.name);
     }
@@ -357,11 +353,9 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
         // this.reporter.simple_note ("visit_error_domain START", error_domain.name);
         var ts_error_domain = new Typescript.ErrorDomain (this.current_main_package.get_root_namespace (), error_domain);
         this.current_error_domain = ts_error_domain;
-        if (this.current_main_package != null) {
-            this.current_main_package.error_domains.add (ts_error_domain);
-        } else {
-            this.reporter.simple_error ("visit_error_domain", "Package for error domain not found!");
-        }
+
+        this.current_main_package.error_domains.set (ts_error_domain.get_name (), ts_error_domain);
+
         error_domain.accept_all_children (this);
         // this.reporter.simple_note ("visit_error_domain END", error_domain.name);
     }
@@ -414,7 +408,7 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
 
     public void visit_global_enum (Typescript.Enum ts_enum) {
         // this.reporter.simple_note ("visit_global_enum START", ts_enum.get_name (this.current_main_package.get_root_namespace()));
-        this.current_main_package.enums.add (ts_enum);
+        this.current_main_package.enums.set (ts_enum.get_name (), ts_enum);
         // this.reporter.simple_note ("visit_global_enum END", ts_enum.get_name (this.current_main_package.get_root_namespace()));
     }
 

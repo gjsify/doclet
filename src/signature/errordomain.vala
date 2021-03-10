@@ -31,7 +31,11 @@ public class Typescript.ErrorDomain : Typescript.Signable {
     }
 
     public string get_name () {
-        return root_namespace.remove_vala_namespace (this._error_domain.get_full_name ());
+        if (this.root_namespace != null) {
+            return root_namespace.remove_vala_namespace (this._error_domain.get_full_name ());
+        } else {
+            return this._error_domain.get_full_name ();
+        }
     }
 
     /**

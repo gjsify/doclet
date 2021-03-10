@@ -37,7 +37,7 @@ public class Typescript.Method : Typescript.Signable {
 
     public bool is_global () {
         var name = this.get_name ();
-        if (Typescript.has_parent_namespace (name)) {
+        if (this.root_namespace != null && Typescript.has_parent_namespace (name)) {
             return false;
         }
         return this._class == null && this._interface == null && this._struct == null && this._enum == null && this._error_domain == null;
@@ -46,7 +46,10 @@ public class Typescript.Method : Typescript.Signable {
     public string get_name (bool as_virtual = false) {
         var name = this._method.get_full_name ();
         bool has_vala_at_prefix = false;
-        name = root_namespace.remove_vala_namespace (name);
+        // Remove root namespace if present
+        if (this.root_namespace != null) {
+            name = this.root_namespace.remove_vala_namespace (name);
+        }
         // Remove class name if present
         if (this._class != null) {
             name = this._class.remove_namespace (name);
@@ -55,30 +58,40 @@ public class Typescript.Method : Typescript.Signable {
         if (this._interface != null) {
             name = this._interface.remove_namespace (name);
         }
+        // Remove interface name if present
+        if (this._enum != null) {
+            name = this._enum.remove_namespace (name);
+        }
         if (name.has_prefix ("@")) {
             has_vala_at_prefix = true;
             name = name.substring (1);
         }
 
+        var parent_name = this.get_parent_name ();
+        if (parent_name != null && parent_name.has_prefix (Typescript.RESERVED_RENAME_PREFIX)) {
+            parent_name = parent_name.substring (1);
+        }
         if (this._method.is_constructor) {
-            var parent_name = this.get_parent_name ();
             if (parent_name != null) {
                 if (name == parent_name) {
                     name = "new";
                 } else {
                     var prefix = parent_name + ".";
                     if (name.has_prefix (prefix)) {
-
-                        name = "new_" + name.substring (prefix.length);
+                        name = name.substring (prefix.length);
+                        name = "new_" + name;
                     }
                 }
             }
         } else {
-            var parent_name = this.get_parent_name ();
             if (parent_name != null) {
                 var prefix = parent_name + ".";
                 if (name.has_prefix (prefix)) {
                     name = name.substring (prefix.length);
+                }
+                if (name.has_prefix ("@")) {
+                    has_vala_at_prefix = true;
+                    name = name.substring (1);
                 }
             }
         }

@@ -6,7 +6,7 @@ public class Typescript.Delegate : Typescript.Signable {
         this._delegate = _delegate;
     }
 
-    public string get_name (Typescript.Namespace ? root_namespace) {
+    public string get_name () {
         return this._delegate.name;
     }
 
@@ -35,7 +35,7 @@ public class Typescript.Delegate : Typescript.Signable {
 
         signature.append ("interface");
 
-        signature.append (this.get_name (root_namespace));
+        signature.append (this.get_name ());
 
         var type_parameters = this._delegate.get_children_by_type (Valadoc.Api.NodeType.TYPE_PARAMETER, false);
         if (type_parameters.size > 0) {

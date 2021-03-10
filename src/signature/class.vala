@@ -10,8 +10,23 @@ public class Typescript.Class : Typescript.Signable {
         var name = this._class.get_full_name ();
         if (this.root_namespace != null) {
             name = this.root_namespace.remove_vala_namespace (name);
+            // if (name == "GLib.StringBuilder" || (root_namespace.get_vala_namespace_name () == "GLib" && name == "StringBuilder")) {
+            // return "String";
+            // }
+        }
+
+        if (Typescript.is_reserved_symbol_name (name)) {
+            return Typescript.RESERVED_RENAME_PREFIX + name;
         }
         return name;
+    }
+
+    public bool is_abstract () {
+        return this._class.is_abstract;
+    }
+
+    public bool is_sealed () {
+        return this._class.is_sealed;
     }
 
     /**
@@ -40,10 +55,10 @@ public class Typescript.Class : Typescript.Signable {
 
         signature.append ("export");
 
-        if (this._class.is_abstract) {
+        if (this.is_abstract ()) {
             signature.append_keyword ("abstract");
         }
-        if (this._class.is_sealed) {
+        if (this.is_sealed ()) {
             signature.append_keyword ("/* sealed */");
         }
         signature.append_keyword ("class");

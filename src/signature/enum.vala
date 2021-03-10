@@ -6,25 +6,40 @@ public class Typescript.Enum : Typescript.Signable {
         this._enum = _enum;
     }
 
-    public Vala.ArrayList<Typescript.EnumValue> get_values () {
+    public Gee.HashMap<string, Typescript.EnumValue> get_values () {
         var values = this._enum.get_children_by_types ({ Valadoc.Api.NodeType.ENUM_VALUE }, false);
-        Vala.ArrayList<Typescript.EnumValue> ts_values = new Vala.ArrayList<Typescript.EnumValue> ();
+        var ts_values = new Gee.HashMap<string, Typescript.EnumValue> ();
         foreach (var val in values) {
             var ts_val = new Typescript.EnumValue (this.root_namespace, val as Valadoc.Api.EnumValue);
-            ts_values.add (ts_val);
+            ts_values.set (ts_val.get_name (), ts_val);
         }
         return ts_values;
     }
 
     public string get_name () {
-        return root_namespace.remove_vala_namespace (this._enum.get_full_name ());
+        var result = "";
+        if (this.root_namespace != null) {
+            result = root_namespace.remove_vala_namespace (this._enum.get_full_name ());
+        } else {
+            result = this._enum.get_full_name ();
+        }
+
+
+        return result;
+    }
+
+    /**
+     * Remove the Class name from a function name
+     */
+    public string remove_namespace (string vala_full_name) {
+        return Typescript.remove_namespace (vala_full_name, this.get_name ());
     }
 
     public string build_values_signature () {
         var signature = new Typescript.SignatureBuilder ();
         var ts_enum_values = this.get_values ();
 
-        foreach (var ts_enum in ts_enum_values) {
+        foreach (var ts_enum in ts_enum_values.values) {
             signature.append_content (ts_enum.get_signature ());
             signature.append (",\n", false);
         }

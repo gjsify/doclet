@@ -1,0 +1,36 @@
+visit_tree START:  note: 
+visit_main_package START:  note: gobject-2.0
+visit_namespace:  note: set_root_namespace: GLib
+visit_main_package END:  note: gobject-2.0
+visit_tree END:  note: 
+write package:  note: GObject-2.0
+doclet process path:  note: /home/jumplink/Projekte/gjsify/doclet/@types/gobject-2.0
+doclet process pkg_name:  note: gobject-2.0
+doclet process pkg_version:  note: 
+doclet process wiki_directory:  note: 
+doclet process pluginargs:  note: 
+doclet process private:  note: false
+doclet process protected:  note: true
+doclet process internal:  note: false
+doclet process with_deps:  note: true
+doclet process add_inherited:  note: false
+doclet process verbose:  note: true
+doclet process experimental:  note: true
+doclet process experimental_non_null:  note: true
+doclet process basedir:  note: 
+doclet process directory:  note: ./@types/gobject-2.0
+doclet process defines:  note: 
+doclet process vapi_directories:  note: /usr/share/vala-0.48/vapi, 
+doclet process packages:  note: 
+doclet process source_files:  note: /usr/share/vala-0.48/vapi/gobject-2.0.vapi, 
+doclet process gir_directory:  note: (null)
+doclet process gir_name:  note: 
+doclet process metadata_directories:  note: 
+doclet process alternative_resource_dirs:  note: 
+doclet process gir_directories:  note: girs/gir-1.0, 
+doclet process target_glib:  note: auto
+doclet process gir_namespace:  note: 
+doclet process gir_version:  note: 
+doclet process use_svg_images:  note: true
+scangobj:  note: package: glib-2.0
+scangobj:  note: package: gobject-2.0

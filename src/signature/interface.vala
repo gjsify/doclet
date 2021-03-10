@@ -11,6 +11,10 @@ public class Typescript.Interface : Typescript.Signable {
         if (this.root_namespace != null) {
             name = root_namespace.remove_vala_namespace (name);
         }
+
+        if (Typescript.is_reserved_symbol_name (name)) {
+            return Typescript.RESERVED_RENAME_PREFIX + name;
+        }
         // TODO get parent package seems to be working
         // var parent_package = this._interface.package.get_full_name ();
         // print (@"Package name: $(parent_package)\n");

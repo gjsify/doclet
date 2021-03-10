@@ -51,7 +51,18 @@ public class Typescript.Struct : Typescript.Signable {
     }
 
     public string get_name () {
-        return this._struct.name;
+        var name = this._struct.get_full_name ();
+        if (this.root_namespace != null) {
+            name = this.root_namespace.remove_vala_namespace (name);
+            // if (name == "GLib.StringBuilder" || (root_namespace.get_vala_namespace_name () == "GLib" && name == "StringBuilder")) {
+            // return "String";
+            // }
+        }
+
+        if (Typescript.is_reserved_symbol_name (name)) {
+            return Typescript.RESERVED_RENAME_PREFIX + name;
+        }
+        return name;
     }
 
     /**

@@ -6,6 +6,11 @@ public class Typescript.EnumValue : Typescript.Signable {
         this._enum_value = enum_value;
     }
 
+    public string get_name () {
+        var name = this._enum_value.name;
+        return name;
+    }
+
     public string get_default_value () {
         var default_value = this._enum_value.default_value;
         return default_value.style.to_string () + " TODO";
@@ -16,7 +21,7 @@ public class Typescript.EnumValue : Typescript.Signable {
      */
     protected override string build_signature () {
         var signature = new Typescript.SignatureBuilder ();
-        signature.append_symbol (this._enum_value);
+        signature.append (this.get_name ());
 
         if (this._enum_value.has_default_value) {
             signature.append ("=");

@@ -6,13 +6,13 @@ public class Typescript.Package : Typescript.Signable {
     protected Vala.SourceFile ? source_file = null;
     public Valadoc.Api.Package package;
     public Typescript.Namespace ? current_namespace = null;
-    public Vala.ArrayList<Typescript.Class> classes = new Vala.ArrayList<Typescript.Class> ();
-    public Vala.ArrayList<Typescript.Interface> ifaces = new Vala.ArrayList<Typescript.Interface> ();
-    public Vala.ArrayList<Typescript.Constant> constants = new Vala.ArrayList<Typescript.Constant> ();
-    public Vala.ArrayList<Typescript.Enum> enums = new Vala.ArrayList<Typescript.Enum> ();
-    public Vala.ArrayList<Typescript.Struct> structs = new Vala.ArrayList<Typescript.Struct> ();
-    public Vala.ArrayList<Typescript.Delegate> delegates = new Vala.ArrayList<Typescript.Delegate> ();
-    public Vala.ArrayList<Typescript.ErrorDomain> error_domains = new Vala.ArrayList<Typescript.ErrorDomain> ();
+    public Gee.HashMap<string, Typescript.Class> classes = new Gee.HashMap<string, Typescript.Class> ();
+    public Gee.HashMap<string, Typescript.Interface> ifaces = new Gee.HashMap<string, Typescript.Interface> ();
+    public Gee.HashMap<string, Typescript.Constant> constants = new Gee.HashMap<string, Typescript.Constant> ();
+    public Gee.HashMap<string, Typescript.Enum> enums = new Gee.HashMap<string, Typescript.Enum> ();
+    public Gee.HashMap<string, Typescript.Struct> structs = new Gee.HashMap<string, Typescript.Struct> ();
+    public Gee.HashMap<string, Typescript.Delegate> delegates = new Gee.HashMap<string, Typescript.Delegate> ();
+    public Gee.HashMap<string, Typescript.ErrorDomain> error_domains = new Gee.HashMap<string, Typescript.ErrorDomain> ();
     /**
      * Global functions of this package
      */
@@ -201,37 +201,37 @@ public class Typescript.Package : Typescript.Signable {
         }
 
         signature.append_line ("// Delegates");
-        foreach (var dele in this.delegates) {
+        foreach (var dele in this.delegates.values) {
             signature.append_line (dele.get_signature ());
         }
 
         signature.append_line ("// Interfaces");
-        foreach (var iface in this.ifaces) {
+        foreach (var iface in this.ifaces.values) {
             signature.append_line (iface.get_signature ());
         }
 
         signature.append_line ("// Classes");
-        foreach (var cls in this.classes) {
+        foreach (var cls in this.classes.values) {
             signature.append_line (cls.get_signature ());
         }
 
         signature.append_line ("// Constants");
-        foreach (var constant in this.constants) {
+        foreach (var constant in this.constants.values) {
             signature.append_line (constant.get_signature ());
         }
 
         signature.append_line ("// Enums");
-        foreach (var enm in this.enums) {
+        foreach (var enm in this.enums.values) {
             signature.append_line (enm.get_signature ());
         }
 
         signature.append_line ("// Structs");
-        foreach (var strct in this.structs) {
+        foreach (var strct in this.structs.values) {
             signature.append_line (strct.get_signature ());
         }
 
         signature.append_line ("// Error Domains");
-        foreach (var error_domain in this.error_domains) {
+        foreach (var error_domain in this.error_domains.values) {
             signature.append_line (error_domain.get_signature ());
         }
 

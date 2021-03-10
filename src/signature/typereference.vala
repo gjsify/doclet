@@ -43,6 +43,11 @@ public class Typescript.TypeReference : Typescript.Signable {
             var ts_symbol = new Typescript.Enum (this.root_namespace, symbol as Valadoc.Api.Enum);
             return ts_symbol.get_name ();
         }
+        if (symbol is Valadoc.Api.TypeParameter) {
+            var ts_symbol = new Typescript.TypeParameter (this.root_namespace, symbol as Valadoc.Api.TypeParameter);
+            return ts_symbol.get_name ();
+        }
+
         var type_full_name = symbol.get_full_name ();
         return root_namespace.remove_vala_namespace (type_full_name);
     }
@@ -65,8 +70,9 @@ public class Typescript.TypeReference : Typescript.Signable {
         }
 
         if (this.type_ref.data_type is Valadoc.Api.Symbol) {
-            var valadoc_type = this.type_ref.data_type.get_type ().name ();
-            signature.append (@"/* $(valadoc_type) */");
+            var data_type = this.type_ref.data_type as Valadoc.Api.Symbol;
+            var valadoc_type = data_type.get_type ().name ();
+            signature.append (@"/* $(valadoc_type) $(data_type.get_full_name()) */");
         }
 
         // Type
