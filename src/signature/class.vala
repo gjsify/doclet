@@ -57,32 +57,38 @@ public class Typescript.Class : Typescript.Signable {
         return null;
     }
 
-    public Gee.HashMap<string, Typescript.Method> get_methods () {
+    public Gee.HashMap<string, Typescript.Method> get_methods (bool only_public = true) {
         var ts_methods = new Gee.HashMap<string, Typescript.Method>();
         var methods = this._class.get_children_by_types ({ Valadoc.Api.NodeType.METHOD }, false);
         foreach (var method in methods) {
             var ts_method = new Typescript.Method (this.root_namespace, method as Valadoc.Api.Method, this);
-            ts_methods.set (ts_method.get_signature (), ts_method);
+            if (ts_method.is_public ()) {
+                ts_methods.set (ts_method.get_signature (), ts_method);
+            }
         }
         return ts_methods;
     }
 
-    public Gee.HashMap<string, Typescript.Method> get_creation_methods () {
+    public Gee.HashMap<string, Typescript.Method> get_creation_methods (bool only_public = true) {
         var ts_methods = new Gee.HashMap<string, Typescript.Method>();
         var methods = this._class.get_children_by_types ({ Valadoc.Api.NodeType.CREATION_METHOD }, false);
         foreach (var method in methods) {
             var ts_method = new Typescript.Method (this.root_namespace, method as Valadoc.Api.Method, this);
-            ts_methods.set (ts_method.get_signature (), ts_method);
+            if (ts_method.is_public ()) {
+                ts_methods.set (ts_method.get_signature (), ts_method);
+            }
         }
         return ts_methods;
     }
 
-    public Gee.HashMap<string, Typescript.Method> get_static_methods () {
+    public Gee.HashMap<string, Typescript.Method> get_static_methods (bool only_public = true) {
         var ts_methods = new Gee.HashMap<string, Typescript.Method>();
         var methods = this._class.get_children_by_types ({ Valadoc.Api.NodeType.STATIC_METHOD }, false);
         foreach (var method in methods) {
             var ts_method = new Typescript.Method (this.root_namespace, method as Valadoc.Api.Method, this);
-            ts_methods.set (ts_method.get_signature (), ts_method);
+            if (ts_method.is_public ()) {
+                ts_methods.set (ts_method.get_signature (), ts_method);
+            }
         }
         return ts_methods;
     }
@@ -93,7 +99,7 @@ public class Typescript.Class : Typescript.Signable {
         if (signals != null && !signals.is_empty) {
             foreach (var sig in signals) {
                 var ts_sig = new Typescript.Signal (this.root_namespace,sig as Valadoc.Api.Signal,this);
-                ts_signals.set (ts_sig.get_name (),ts_sig);
+                ts_signals.set (ts_sig.get_signature (),ts_sig);
             }
         }
         return ts_signals;
@@ -106,7 +112,7 @@ public class Typescript.Class : Typescript.Signable {
         return Typescript.remove_namespace (vala_full_name,this.get_name ());
     }
 
-    protected Gee.HashMap<string,Typescript.Signal> get_overloaded_signals () {
+    protected Gee.HashMap<string,Typescript.Signal> get_missing_overloaded_signals () {
         var overloaded_signals = new Gee.HashMap<string,Typescript.Signal> ();
         var class_signals = this.get_signals ();
 
@@ -115,9 +121,9 @@ public class Typescript.Class : Typescript.Signable {
             var ts_base_signals = ts_base_class.get_signals ();
             if (ts_base_signals != null && !ts_base_signals.is_empty) {
                 foreach (var ts_base_signal in ts_base_signals.values) {
-                    var name = ts_base_signal.get_name ();
-                    if (!class_signals.has_key (name))
-                        overloaded_signals.set (name,ts_base_signal);
+                    var signature = ts_base_signal.get_signature ();
+                    if (!class_signals.has_key (signature))
+                        overloaded_signals.set (signature,ts_base_signal);
                 }
             }
             ts_base_class = ts_base_class.get_base_class ();
@@ -126,7 +132,7 @@ public class Typescript.Class : Typescript.Signable {
         return overloaded_signals;
     }
 
-    protected Gee.HashMap<string,Typescript.Method> get_overloaded_creation_methods () {
+    protected Gee.HashMap<string,Typescript.Method> get_missing_overloaded_creation_methods () {
         var overloaded_creation_methods = new Gee.HashMap<string,Typescript.Method> ();
         var class_creation_methods = this.get_creation_methods ();
 
@@ -181,6 +187,44 @@ public class Typescript.Class : Typescript.Signable {
     }
 
     /**
+     * Used to simulare multiple inheritance
+     * @see https://stackoverflow.com/a/54084281/1465919
+     */
+    protected string build_inheritance_interface_signature () {
+        var signature = new Typescript.SignatureBuilder ();
+        var interfaces = this._class.get_implemented_interface_list ();
+        var ts_base_class = this.get_base_class ();
+        var name = this.get_name ();
+
+        if (interfaces.size > 0 || ts_base_class != null) {
+            signature.append_line ("\n// For intellisense only, let's Typescript think the next class has all implementations");
+            signature.append_line (@"interface $(name)");
+
+            if (interfaces.size > 0) {
+                signature.append (@"extends $(this.get_implementations_str(interfaces))");
+            }
+
+            signature.append ("{\n");
+
+
+            // Overloaded Signals
+
+            var overloaded_ts_signals = this.get_missing_overloaded_signals ();
+            if (overloaded_ts_signals.size > 0) {
+                signature.append_line ("// Overloaded Signals\n");
+                foreach (var ts_signal in overloaded_ts_signals.values) {
+                    signature.append_content (ts_signal.build_signature_for_interface ());
+                    signature.append ("\n",false);
+                }
+            }
+
+
+            signature.append_line (@"}\n");
+        }
+        return signature.to_string ();
+    }
+
+    /**
      * Basesd on libvaladoc/api/class.vala
      */
     protected override string build_signature () {
@@ -193,11 +237,7 @@ public class Typescript.Class : Typescript.Signable {
             return "// GLib.Error";
         }
 
-        if (interfaces.size > 0) {
-            // See https://stackoverflow.com/a/54084281/1465919
-            signature.append_line ("\n// For intellisense only, let's Typescript think the next class has all implementations");
-            signature.append_line (@"interface $(name) extends $(this.get_implementations_str(interfaces)) {}");
-        }
+        signature.append_line (this.build_inheritance_interface_signature ());
 
         // TODO comments builder
         signature.append ("\n/**\n",false);
@@ -268,7 +308,7 @@ public class Typescript.Class : Typescript.Signable {
             //
             // Overloaded Constructors
             //
-            var overloaded_ts_creation_methods = this.get_overloaded_creation_methods ();
+            var overloaded_ts_creation_methods = this.get_missing_overloaded_creation_methods ();
             if (overloaded_ts_creation_methods.size > 0) {
                 signature.append_line ("// Overloaded Constructors\n");
                 foreach (var ts_creation_method in overloaded_ts_creation_methods.values) {
@@ -318,18 +358,6 @@ public class Typescript.Class : Typescript.Signable {
             foreach (var ts_signal in ts_signals.values) {
                 signature.append_content (ts_signal.get_signature ());
                 signature.append ("\n", false);
-            }
-
-            //
-            // Overloaded Signals
-            //
-            var overloaded_ts_signals = this.get_overloaded_signals ();
-            if (overloaded_ts_signals.size > 0) {
-                signature.append_line ("// Overloaded Signals\n");
-                foreach (var ts_signal in overloaded_ts_signals.values) {
-                    signature.append_content (ts_signal.get_signature ());
-                    signature.append ("\n", false);
-                }
             }
         }
 

@@ -20,13 +20,23 @@ public class Typescript.Signal : Typescript.Signable {
         return false;
     }
 
-    public string get_signal_methods () {
+    public bool parent_is_interface () {
+        if (this.parent_symbol != null && this.parent_symbol is Typescript.Interface) {
+            return true;
+        }
+        return false;
+    }
+
+    public string get_signal_methods (bool force_interface = false) {
         var signature = new Typescript.SignatureBuilder ();
         var name = this.get_name ();
         var cl = this.parent_symbol.get_name ();
         var parameters = this.get_parameters ();
         var return_type = this.get_return_type ();
         var accessibility = this._signal.accessibility.to_string ();
+        if (this.parent_is_interface () || force_interface) {
+            accessibility = "";
+        }
         var keyword = "";
         if (this._signal.is_virtual && this.parent_is_abstract ()) {
             keyword = "/* abstract */";
@@ -54,6 +64,16 @@ public class Typescript.Signal : Typescript.Signable {
     public string get_return_type () {
         var ts_return_type = new Typescript.TypeReference (this.root_namespace, this._signal.return_type as Valadoc.Api.TypeReference);
         return ts_return_type.get_signature ();
+    }
+
+    public string build_signature_for_interface () {
+        var signature = new Typescript.SignatureBuilder ();
+        var vala_signatur = "// " + this.get_name ();
+        signature.append_line (vala_signatur);
+
+        signature.append_line (this.get_signal_methods (true));
+
+        return signature.to_string ();
     }
 
     /**
