@@ -121,6 +121,50 @@ public class Typescript.Class : Typescript.Signable {
         return Typescript.remove_namespace (vala_full_name,this.get_name ());
     }
 
+    protected GLib.List<Typescript.Method> find_methods_in_base_classes_by_name (string name,Typescript.Class related_class,bool only_public = true) {
+        var results = new GLib.List<Typescript.Method>();
+        var current_class = this; // Start on current class
+
+        while (current_class != null) {
+            if (current_class.get_name () != related_class.get_name ()) {
+                var ts_base_methods = current_class.get_methods (only_public,KeyType.NAME);
+                if (ts_base_methods != null && !ts_base_methods.is_empty) {
+                    foreach (var ts_base_method in ts_base_methods.values) {
+                        var base_name = ts_base_method.get_name ();
+                        if (base_name == name) {
+                            results.append (ts_base_method);
+                        }
+                    }
+                }
+            }
+            current_class = current_class.get_base_class ();
+        }
+        return results;
+    }
+
+    protected Gee.HashMap<string,Typescript.Method> get_missing_overloaded_methods (bool only_public = true) {
+        var overloaded_methods = new Gee.HashMap<string,Typescript.Method> ();
+        var current_class = this; // Start on current class
+
+        while (current_class != null) {
+            var ts_base_methods = current_class.get_methods (only_public,KeyType.NAME);
+            if (ts_base_methods != null && !ts_base_methods.is_empty) {
+                foreach (var ts_base_method in ts_base_methods.values) {
+                    var name = ts_base_method.get_name ();
+                    var found_methods_with_same_name = this.find_methods_in_base_classes_by_name (name,current_class,only_public);
+
+                    foreach (var found_method in found_methods_with_same_name) {
+                        var signature = ts_base_method.get_signature ();
+                        overloaded_methods.set (signature,ts_base_method);
+                    }
+                }
+            }
+            current_class = current_class.get_base_class ();
+        }
+
+        return overloaded_methods;
+    }
+
     protected Gee.HashMap<string,Typescript.Signal> get_missing_overloaded_signals (KeyType key_type = KeyType.SIGNATURE) {
         var overloaded_signals = new Gee.HashMap<string,Typescript.Signal> ();
         var class_signals = this.get_signals (key_type);
@@ -159,32 +203,6 @@ public class Typescript.Class : Typescript.Signable {
         }
 
         return overloaded_creation_methods;
-    }
-
-    protected Gee.HashMap<string,Typescript.Method> get_missing_overloaded_methods (bool only_public = true) {
-        var overloaded_methods = new Gee.HashMap<string,Typescript.Method> ();
-        var class_methods = this.get_methods (only_public,KeyType.NAME);
-        var ts_base_class = this.get_base_class ();
-
-        while (ts_base_class != null) {
-            var ts_base_methods = ts_base_class.get_methods (only_public,KeyType.NAME);
-            if (ts_base_methods != null && !ts_base_methods.is_empty) {
-                foreach (var ts_base_method in ts_base_methods.values) {
-                    var name = ts_base_method.get_name ();
-                    // Method is only overloaded if other method with the same name are exists
-                    if (class_methods.has_key (name)) {
-                        var class_signature = class_methods.get (name).get_signature ();
-                        var base_signature = ts_base_method.get_signature ();
-                        if (base_signature != class_signature) {
-                            overloaded_methods.set (base_signature,ts_base_method);
-                        }
-                    }
-                }
-            }
-            ts_base_class = ts_base_class.get_base_class ();
-        }
-
-        return overloaded_methods;
     }
 
     protected string get_implementations_str (Vala.Collection<Valadoc.Api.TypeReference> interfaces) {

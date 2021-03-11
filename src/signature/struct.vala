@@ -35,7 +35,7 @@ public class Typescript.Struct : Typescript.Signable {
             signature.append (";\n", false);
         }
         // Records, classes and interfaces all have a static name
-        signature.append ("static name: string;\n", false);
+        // signature.append ("static name: string;\n", false);
         return signature.to_string ();
     }
 
