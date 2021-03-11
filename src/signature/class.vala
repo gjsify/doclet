@@ -23,6 +23,7 @@ public class Typescript.Class : Typescript.Signable {
         if (Typescript.is_reserved_symbol_name (name)) {
             return Typescript.RESERVED_RENAME_PREFIX + name;
         }
+
         return name;
     }
 
@@ -51,12 +52,12 @@ public class Typescript.Class : Typescript.Signable {
         if (base_class is Valadoc.Api.Class) {
             var ts_base_class = new Typescript.Class (this.root_namespace, base_class as Valadoc.Api.Class);
             if (ts_base_class.get_name () == this.get_name ()) {
-                print (@"Same name $(ts_base_class.get_name() )\n");
+                print (@"Same name $(ts_base_class.get_name ())\n");
                 return null;
             }
             return ts_base_class;
         } else {
-            print (@"TODO $(base_class.get_type().name() )\n");
+            print (@"TODO $(base_class.get_type ().name ())\n");
         }
 
         return null;
@@ -142,7 +143,7 @@ public class Typescript.Class : Typescript.Signable {
         return results;
     }
 
-    protected Gee.HashMap<string,Typescript.Method> get_missing_overloaded_methods (bool only_public = true) {
+    protected Gee.HashMap<string,Typescript.Method> get_missing_overloaded_methods (bool only_public = true,uint deep = 1) {
         var overloaded_methods = new Gee.HashMap<string,Typescript.Method> ();
         var current_class = this; // Start on current class
 
@@ -219,7 +220,7 @@ public class Typescript.Class : Typescript.Signable {
         return result;
     }
 
-    protected string build_type_parameter_signature () {
+    public string get_type_parameter_signature () {
         var result = "";
         var type_parameters = this._class.get_children_by_type (Valadoc.Api.NodeType.TYPE_PARAMETER,false);
         if (type_parameters.size > 0) {
@@ -228,7 +229,7 @@ public class Typescript.Class : Typescript.Signable {
             foreach (Valadoc.Api.Item param in type_parameters) {
                 var ts_param = new Typescript.TypeParameter (this.root_namespace,param as Valadoc.Api.TypeParameter);
                 if (!first) {
-                    result += ",";
+                    result += ", ";
                 }
                 result += ts_param.get_signature ();
                 first = false;
@@ -315,7 +316,7 @@ public class Typescript.Class : Typescript.Signable {
         signature.append_keyword ("class");
         signature.append (name);
 
-        signature.append (this.build_type_parameter_signature (),false);
+        signature.append (this.get_type_parameter_signature (),false);
 
         //
         // Extended class

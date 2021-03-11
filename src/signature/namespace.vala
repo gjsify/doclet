@@ -7,6 +7,9 @@ public class Typescript.Namespace : Typescript.Signable {
         this.package = package;
         this.vala_namespace = vala_namespace;
         this.vala = this.vala_namespace.data.to_string ();
+        if (this.is_root ()) {
+            print (@"$(this.get_vala_namespace_name()): $(this.get_gir_namespace_name())\n");
+        }
     }
 
     public override string get_name () {

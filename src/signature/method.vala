@@ -58,12 +58,12 @@ public class Typescript.Method : Typescript.Signable {
         if (this._method.is_constructor) {
             if (parent_name != null) {
                 if (name == parent_name) {
-                    name = "new";
+                    name = "new" + this.get_type_parameter_signature ();
                 } else {
                     var prefix = parent_name + ".";
                     if (name.has_prefix (prefix)) {
                         name = name.substring (prefix.length);
-                        name = "new_" + name;
+                        name = "new_" + name + this.get_type_parameter_signature ();
                     }
                 }
             }
@@ -92,6 +92,27 @@ public class Typescript.Method : Typescript.Signable {
 
     public override string get_name () {
         return this._get_name ();
+    }
+
+    public string get_type_parameter_signature () {
+        if (this.parent_symbol != null) {
+            if (this.parent_symbol is Typescript.Class) {
+                var _class = this.parent_symbol as Typescript.Class;
+                return _class.get_type_parameter_signature ();
+            }
+        }
+        return "";
+    }
+
+    public string ? get_parent_type_signature () {
+        if (this.parent_symbol != null) {
+            if (this.parent_symbol is Typescript.Class) {
+                var _class = this.parent_symbol as Typescript.Class;
+                return _class.get_name () + _class.get_type_parameter_signature ();
+            }
+            return this.parent_symbol.get_name ();
+        }
+        return null;
     }
 
     /**
@@ -129,16 +150,17 @@ public class Typescript.Method : Typescript.Signable {
     }
 
     public string get_return_type () {
+        string ? result = null;
         if (this._method.is_constructor) {
-            var parent = this.get_parent_name ();
-            if (parent != null) {
-                return parent;
+            result = this.get_parent_type_signature ();
+            if (result != null) {
+                return result;
             } else {
                 GLib.stderr.printf (@"Parent for constructor of '$(this.get_parent_type())' '$(this.get_name())' not found!\n");
             }
         }
         var ts_return_type = new Typescript.TypeReference (this.root_namespace, this._method.return_type as Valadoc.Api.TypeReference);
-        var result = ts_return_type.get_signature ();
+        result = ts_return_type.get_signature ();
         return result;
     }
 
