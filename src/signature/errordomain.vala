@@ -30,7 +30,7 @@ public class Typescript.ErrorDomain : Typescript.Signable {
         return signature.to_string ();
     }
 
-    public string get_name () {
+    public override string get_name () {
         if (this.root_namespace != null) {
             return root_namespace.remove_vala_namespace (this._error_domain.get_full_name ());
         } else {

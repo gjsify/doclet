@@ -6,7 +6,7 @@ public class Typescript.Parameter : Typescript.Signable {
         this.param = param;
     }
 
-    public string get_name () {
+    public override string get_name () {
         var name = this.param.name;
         if (name.has_prefix ("@")) {
             name = name.substring (1);

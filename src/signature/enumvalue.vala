@@ -6,7 +6,7 @@ public class Typescript.EnumValue : Typescript.Signable {
         this._enum_value = enum_value;
     }
 
-    public string get_name () {
+    public override string get_name () {
         var name = this._enum_value.name;
         return name;
     }

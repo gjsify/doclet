@@ -6,7 +6,7 @@ public class Typescript.Interface : Typescript.Signable {
         this._interface = iface;
     }
 
-    public string get_name () {
+    public override string get_name () {
         var name = this._interface.get_full_name ();
         if (this.root_namespace != null) {
             name = root_namespace.remove_vala_namespace (name);
@@ -108,7 +108,7 @@ public class Typescript.Interface : Typescript.Signable {
         var properties = this._interface.get_children_by_types ({ Valadoc.Api.NodeType.PROPERTY }, false);
         foreach (var _prop in properties) {
             var prop = (Valadoc.Api.Property)_prop;
-            var ts_prop = new Typescript.Property (this.root_namespace, prop);
+            var ts_prop = new Typescript.Property (this.root_namespace, prop, this);
             signature.append_content (ts_prop.get_signature ());
             signature.append (";\n", false);
         }

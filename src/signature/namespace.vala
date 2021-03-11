@@ -9,6 +9,10 @@ public class Typescript.Namespace : Typescript.Signable {
         this.vala = this.vala_namespace.data.to_string ();
     }
 
+    public override string get_name () {
+        return this.get_gir_namespace_name ();
+    }
+
     public string get_vala_namespace_name () {
         return this.vala_namespace.name;
     }

@@ -22,7 +22,7 @@ public class Typescript.Method : Typescript.Signable {
         return this.parent_symbol == null;
     }
 
-    public string get_name (bool as_virtual = false) {
+    protected string _get_name (bool as_virtual = false) {
         var name = this._method.get_full_name ();
         bool has_vala_at_prefix = false;
         // Remove root namespace if present
@@ -90,31 +90,17 @@ public class Typescript.Method : Typescript.Signable {
         return name;
     }
 
+    public override string get_name () {
+        return this._get_name ();
+    }
+
     /**
      * Name of the class or interface in which this method is defined
      */
     public string ? get_parent_name () {
+
         if (this.parent_symbol != null) {
-            if (this.parent_symbol is Typescript.Interface) {
-                var _interface = this.parent_symbol as Typescript.Interface;
-                return _interface.get_name ();
-            }
-            if (this.parent_symbol is Typescript.Class) {
-                var _class = this.parent_symbol as Typescript.Class;
-                return _class.get_name ();
-            }
-            if (this.parent_symbol is Typescript.Struct) {
-                var _struct = this.parent_symbol as Typescript.Struct;
-                return _struct.get_name ();
-            }
-            if (this.parent_symbol is Typescript.Enum) {
-                var _enum = this.parent_symbol as Typescript.Enum;
-                return _enum.get_name ();
-            }
-            if (this.parent_symbol is Typescript.ErrorDomain) {
-                var _error_domain = this.parent_symbol as Typescript.ErrorDomain;
-                return _error_domain.get_name ();
-            }
+            return this.parent_symbol.get_name ();
         }
 
         return null;
@@ -154,6 +140,14 @@ public class Typescript.Method : Typescript.Signable {
         var ts_return_type = new Typescript.TypeReference (this.root_namespace, this._method.return_type as Valadoc.Api.TypeReference);
         var result = ts_return_type.get_signature ();
         return result;
+    }
+
+    public string get_accessibility () {
+        return this._method.accessibility.to_string ();
+    }
+
+    public bool is_public () {
+        return this.get_accessibility () == "public";
     }
 
     /**
@@ -204,7 +198,7 @@ public class Typescript.Method : Typescript.Signable {
             signature.append_keyword ("async");
         }
 
-        signature.append (this.get_name (as_virtual));
+        signature.append (this._get_name (as_virtual));
 
         var type_parameters = this._method.get_children_by_type (Valadoc.Api.NodeType.TYPE_PARAMETER, false);
         if (type_parameters.size > 0) {

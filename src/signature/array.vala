@@ -6,6 +6,10 @@ public class Typescript.Array : Typescript.Signable {
         this.array = array;
     }
 
+    public override string get_name () {
+        return "";
+    }
+
     private inline bool element_is_owned () {
         Valadoc.Api.TypeReference reference = this.array.data_type as Valadoc.Api.TypeReference;
         if (reference == null) {

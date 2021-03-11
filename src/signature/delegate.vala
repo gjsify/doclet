@@ -6,7 +6,7 @@ public class Typescript.Delegate : Typescript.Signable {
         this._delegate = _delegate;
     }
 
-    public string get_name () {
+    public override string get_name () {
         return this._delegate.name;
     }
 

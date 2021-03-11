@@ -6,7 +6,7 @@ public class Typescript.TypeReference : Typescript.Signable {
         this.type_ref = type_ref;
     }
 
-    public string get_name () {
+    public override string get_name () {
         string ? type = null;
         if (this.type_ref.data_type == null) {
             type = "void";

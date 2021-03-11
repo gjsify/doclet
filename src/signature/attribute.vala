@@ -6,6 +6,10 @@ public class Typescript.Attribute : Typescript.Signable {
         this.attr = attr;
     }
 
+    public override string get_name () {
+        return this.attr.name;
+    }
+
     /**
      * Basesd on libvaladoc/api/attribute.vala
      */

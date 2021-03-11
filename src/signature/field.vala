@@ -6,7 +6,7 @@ public class Typescript.Field : Typescript.Signable {
         this.field = field;
     }
 
-    public string get_name () {
+    public override string get_name () {
         return this.field.name;
     }
 

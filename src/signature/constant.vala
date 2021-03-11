@@ -10,7 +10,7 @@ public class Typescript.Constant : Typescript.Signable {
      * Get full name for typescript for currrent root namespace.
      * Reverts the namespace conversion of vala
      */
-    public string get_name () {
+    public override string get_name () {
         var vala_full_name = this._constant.get_full_name ();
         var result = vala_full_name;
         if (this.root_namespace != null) {

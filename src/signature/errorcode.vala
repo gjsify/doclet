@@ -6,6 +6,10 @@ public class Typescript.ErrorCode : Typescript.Signable {
         this._error_code = error_code;
     }
 
+    public override string get_name () {
+        return this._error_code.name;
+    }
+
     /**
      * Returns the name of this class as it is used in C.
      */

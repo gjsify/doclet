@@ -16,7 +16,7 @@ public class Typescript.Enum : Typescript.Signable {
         return ts_values;
     }
 
-    public string get_name () {
+    public override string get_name () {
         var result = "";
         if (this.root_namespace != null) {
             result = root_namespace.remove_vala_namespace (this._enum.get_full_name ());

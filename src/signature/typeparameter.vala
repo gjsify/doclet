@@ -10,7 +10,7 @@ public class Typescript.TypeParameter : Typescript.Signable {
         this.type_param = type_param;
     }
 
-    public string get_name () {
+    public override string get_name () {
         var name = this.type_param.name;
         name = Typescript.transform_type (name);
         return name;

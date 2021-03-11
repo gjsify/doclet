@@ -49,7 +49,7 @@ public class Typescript.Package : Typescript.Signable {
         return true;
     }
 
-    public string get_name () {
+    public override string get_name () {
         // return this.package.get_full_name ();
         return this.get_vala_package_name ();
     }

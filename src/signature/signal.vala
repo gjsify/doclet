@@ -1,26 +1,34 @@
 public class Typescript.Signal : Typescript.Signable {
     protected Valadoc.Api.Signal _signal;
-    protected Typescript.Class _class;
+    protected Typescript.Signable parent_symbol;
 
-    public Signal (Typescript.Namespace ? root_namespace, Valadoc.Api.Signal _signal, Typescript.Class _class) {
+    public Signal (Typescript.Namespace ? root_namespace, Valadoc.Api.Signal _signal, Typescript.Signable ? parent_symbol) {
         this.root_namespace = root_namespace;
         this._signal = _signal;
-        this._class = _class;
+        this.parent_symbol = parent_symbol;
     }
 
-    public string get_name () {
+    public override string get_name () {
         return this._signal.name;
+    }
+
+    public bool parent_is_abstract () {
+        if (this.parent_symbol != null && this.parent_symbol is Typescript.Class) {
+            var _class = this.parent_symbol as Typescript.Class;
+            return _class.is_abstract ();
+        }
+        return false;
     }
 
     public string get_signal_methods () {
         var signature = new Typescript.SignatureBuilder ();
         var name = this.get_name ();
-        var cl = this._class.get_name ();
+        var cl = this.parent_symbol.get_name ();
         var parameters = this.get_parameters ();
         var return_type = this.get_return_type ();
         var accessibility = this._signal.accessibility.to_string ();
         var keyword = "";
-        if (this._signal.is_virtual && this._class.is_abstract ()) {
+        if (this._signal.is_virtual && this.parent_is_abstract ()) {
             keyword = "/* abstract */";
         }
         signature.append_line (@"$(accessibility) $(keyword) connect(sigName: \"$(name)\", callback: ((obj: $(cl), $(parameters)) => $(return_type) )): number;");

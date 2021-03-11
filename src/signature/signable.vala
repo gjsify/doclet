@@ -2,6 +2,8 @@ public abstract class Typescript.Signable {
     protected Vala.HashMap<string, string> signatures = new Vala.HashMap<string, string> ();
     protected Typescript.Namespace ? root_namespace = null;
 
+    public abstract string get_name ();
+
     public string get_signature () {
         string ns = "";
         if (this.root_namespace != null && this.root_namespace is Typescript.Namespace) {

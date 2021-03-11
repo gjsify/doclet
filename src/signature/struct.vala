@@ -50,7 +50,7 @@ public class Typescript.Struct : Typescript.Signable {
         return signature.to_string ();
     }
 
-    public string get_name () {
+    public override string get_name () {
         var name = this._struct.get_full_name ();
         if (this.root_namespace != null) {
             name = this.root_namespace.remove_vala_namespace (name);
