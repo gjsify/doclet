@@ -283,8 +283,24 @@ public class Typescript.Generator : Valadoc.Api.Visitor {
     public override void visit_method (Valadoc.Api.Method m) {
         // this.reporter.simple_note("visit_method", "visit_method: %s", (string) m.name);
         // m.accept_children ({NodeType.FORMAL_PARAMETER, NodeType.TYPE_PARAMETER}, this);
+        Typescript.Signable ? _symbol = null;
+        if (this.current_class != null) {
+            _symbol = this.current_class;
+        }
+        if (this.current_interface != null) {
+            _symbol = this.current_interface;
+        }
+        if (this.current_struct != null) {
+            _symbol = this.current_struct;
+        }
+        if (this.current_enum != null) {
+            _symbol = this.current_enum;
+        }
+        if (this.current_error_domain != null) {
+            _symbol = this.current_error_domain;
+        }
 
-        var ts_m = new Typescript.Method (this.current_main_package.get_root_namespace (), m as Valadoc.Api.Method, this.current_class, this.current_interface, this.current_struct, this.current_enum, this.current_error_domain);
+        var ts_m = new Typescript.Method (this.current_main_package.get_root_namespace (), m as Valadoc.Api.Method, _symbol);
 
 
         if (m.is_constructor) {

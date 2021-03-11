@@ -57,32 +57,32 @@ public class Typescript.Class : Typescript.Signable {
         return null;
     }
 
-    public Vala.ArrayList<Typescript.Method> get_methods () {
-        var ts_methods = new Vala.ArrayList<Typescript.Method>();
+    public Gee.HashMap<string, Typescript.Method> get_methods () {
+        var ts_methods = new Gee.HashMap<string, Typescript.Method>();
         var methods = this._class.get_children_by_types ({ Valadoc.Api.NodeType.METHOD }, false);
         foreach (var method in methods) {
-            var ts_method = new Typescript.Method (this.root_namespace, method as Valadoc.Api.Method, this, null, null, null, null);
-            ts_methods.add (ts_method);
+            var ts_method = new Typescript.Method (this.root_namespace, method as Valadoc.Api.Method, this);
+            ts_methods.set (ts_method.get_signature (), ts_method);
         }
         return ts_methods;
     }
 
-    public Vala.ArrayList<Typescript.Method> get_creation_methods () {
-        var ts_methods = new Vala.ArrayList<Typescript.Method>();
+    public Gee.HashMap<string, Typescript.Method> get_creation_methods () {
+        var ts_methods = new Gee.HashMap<string, Typescript.Method>();
         var methods = this._class.get_children_by_types ({ Valadoc.Api.NodeType.CREATION_METHOD }, false);
         foreach (var method in methods) {
-            var ts_method = new Typescript.Method (this.root_namespace, method as Valadoc.Api.Method, this, null, null, null, null);
-            ts_methods.add (ts_method);
+            var ts_method = new Typescript.Method (this.root_namespace, method as Valadoc.Api.Method, this);
+            ts_methods.set (ts_method.get_signature (), ts_method);
         }
         return ts_methods;
     }
 
-    public Vala.ArrayList<Typescript.Method> get_static_methods () {
-        var ts_methods = new Vala.ArrayList<Typescript.Method>();
+    public Gee.HashMap<string, Typescript.Method> get_static_methods () {
+        var ts_methods = new Gee.HashMap<string, Typescript.Method>();
         var methods = this._class.get_children_by_types ({ Valadoc.Api.NodeType.STATIC_METHOD }, false);
         foreach (var method in methods) {
-            var ts_method = new Typescript.Method (this.root_namespace, method as Valadoc.Api.Method, this, null, null, null, null);
-            ts_methods.add (ts_method);
+            var ts_method = new Typescript.Method (this.root_namespace, method as Valadoc.Api.Method, this);
+            ts_methods.set (ts_method.get_signature (), ts_method);
         }
         return ts_methods;
     }
@@ -112,7 +112,6 @@ public class Typescript.Class : Typescript.Signable {
 
         var ts_base_class = this.get_base_class ();
         while (ts_base_class != null) {
-            print (@"base_class: $(ts_base_class.get_name())\n");
             var ts_base_signals = ts_base_class.get_signals ();
             if (ts_base_signals != null && !ts_base_signals.is_empty) {
                 foreach (var ts_base_signal in ts_base_signals.values) {
@@ -127,7 +126,28 @@ public class Typescript.Class : Typescript.Signable {
         return overloaded_signals;
     }
 
-    protected string get_implementations_string (Vala.Collection<Valadoc.Api.TypeReference> interfaces) {
+    protected Gee.HashMap<string,Typescript.Method> get_overloaded_creation_methods () {
+        var overloaded_creation_methods = new Gee.HashMap<string,Typescript.Method> ();
+        var class_creation_methods = this.get_creation_methods ();
+
+        var ts_base_class = this.get_base_class ();
+        while (ts_base_class != null) {
+            print (@"base_class: $(ts_base_class.get_name())\n");
+            var ts_base_creation_methods = ts_base_class.get_creation_methods ();
+            if (ts_base_creation_methods != null && !ts_base_creation_methods.is_empty) {
+                foreach (var ts_base_constructor in ts_base_creation_methods.values) {
+                    var signature = ts_base_constructor.get_signature ();
+                    if (!class_creation_methods.has_key (signature))
+                        overloaded_creation_methods.set (signature,ts_base_constructor);
+                }
+            }
+            ts_base_class = ts_base_class.get_base_class ();
+        }
+
+        return overloaded_creation_methods;
+    }
+
+    protected string get_implementations_str (Vala.Collection<Valadoc.Api.TypeReference> interfaces) {
         var result = "";
         var first = true;
         foreach (Valadoc.Api.TypeReference implemented_interface in interfaces) {
@@ -137,6 +157,25 @@ public class Typescript.Class : Typescript.Signable {
             var ts_implemented_interface = new Typescript.TypeReference (this.root_namespace,implemented_interface);
             result += ts_implemented_interface.get_signature ();
             first = false;
+        }
+        return result;
+    }
+
+    protected string build_type_parameter_signature () {
+        var result = "";
+        var type_parameters = this._class.get_children_by_type (Valadoc.Api.NodeType.TYPE_PARAMETER,false);
+        if (type_parameters.size > 0) {
+            result += "<";
+            bool first = true;
+            foreach (Valadoc.Api.Item param in type_parameters) {
+                var ts_param = new Typescript.TypeParameter (this.root_namespace,param as Valadoc.Api.TypeParameter);
+                if (!first) {
+                    result += ",";
+                }
+                result += ts_param.get_signature ();
+                first = false;
+            }
+            result += ">";
         }
         return result;
     }
@@ -157,7 +196,7 @@ public class Typescript.Class : Typescript.Signable {
         if (interfaces.size > 0) {
             // See https://stackoverflow.com/a/54084281/1465919
             signature.append_line ("\n// For intellisense only, let's Typescript think the next class has all implementations");
-            signature.append_line (@"interface $(name) extends $(this.get_implementations_string(interfaces)) {}");
+            signature.append_line (@"interface $(name) extends $(this.get_implementations_str(interfaces)) {}");
         }
 
         // TODO comments builder
@@ -176,20 +215,7 @@ public class Typescript.Class : Typescript.Signable {
         signature.append_keyword ("class");
         signature.append (name);
 
-        var type_parameters = this._class.get_children_by_type (Valadoc.Api.NodeType.TYPE_PARAMETER,false);
-        if (type_parameters.size > 0) {
-            signature.append ("<",false);
-            bool first = true;
-            foreach (Valadoc.Api.Item param in type_parameters) {
-                var ts_param = new Typescript.TypeParameter (this.root_namespace,param as Valadoc.Api.TypeParameter);
-                if (!first) {
-                    signature.append (",",false);
-                }
-                signature.append_content (ts_param.get_signature (),false);
-                first = false;
-            }
-            signature.append (">",false);
-        }
+        signature.append (this.build_type_parameter_signature (),false);
 
         //
         // Extended class
@@ -210,7 +236,7 @@ public class Typescript.Class : Typescript.Signable {
         //
 
         if (interfaces.size > 0) {
-            signature.append (@"implements $(this.get_implementations_string(interfaces))");
+            signature.append (@"implements $(this.get_implementations_str(interfaces))");
         }
 
         // START Body
@@ -231,12 +257,25 @@ public class Typescript.Class : Typescript.Signable {
         // Constructors
         //
         var ts_constructors = this.get_creation_methods ();
-        signature.append_line ("// Constructors\n");
-        // Default constructor TODO add parameters
-        signature.append_line ("public constructor ()\n");
-        foreach (var ts_constructor in ts_constructors) {
-            signature.append_content (ts_constructor.get_signature ());
-            signature.append (";\n",false);
+        if (ts_constructors.size > 0) {
+            signature.append_line ("// Constructors\n");
+            // Default constructor TODO add parameters
+            signature.append_line ("public constructor ()\n");
+            foreach (var ts_constructor in ts_constructors.values) {
+                signature.append_content (ts_constructor.get_signature ());
+                signature.append (";\n", false);
+            }
+            //
+            // Overloaded Constructors
+            //
+            var overloaded_ts_creation_methods = this.get_overloaded_creation_methods ();
+            if (overloaded_ts_creation_methods.size > 0) {
+                signature.append_line ("// Overloaded Constructors\n");
+                foreach (var ts_creation_method in overloaded_ts_creation_methods.values) {
+                    signature.append_content (ts_creation_method.get_signature ());
+                    signature.append ("\n", false);
+                }
+            }
         }
 
         //
@@ -244,9 +283,9 @@ public class Typescript.Class : Typescript.Signable {
         //
         var ts_static_methods = this.get_static_methods ();
         signature.append_line ("// Static Methods\n");
-        foreach (var ts_method in ts_static_methods) {
+        foreach (var ts_method in ts_static_methods.values) {
             signature.append_content (ts_method.get_signature ());
-            signature.append (";\n",false);
+            signature.append (";\n", false);
         }
 
         //
@@ -254,20 +293,20 @@ public class Typescript.Class : Typescript.Signable {
         //
         var ts_methods = this.get_methods ();
         signature.append_line ("// Methods\n");
-        foreach (var ts_method in ts_methods) {
+        foreach (var ts_method in ts_methods.values) {
             signature.append_content (ts_method.get_signature ());
-            signature.append (";\n",false);
+            signature.append (";\n", false);
         }
 
         //
         // Delegates
         //
-        var delegates = this._class.get_children_by_types ({ Valadoc.Api.NodeType.DELEGATE },false);
+        var delegates = this._class.get_children_by_types ({ Valadoc.Api.NodeType.DELEGATE }, false);
         signature.append_line ("// Delegates\n");
         foreach (var dele in delegates) {
-            var ts_dele = new Typescript.Delegate (this.root_namespace,dele as Valadoc.Api.Delegate);
+            var ts_dele = new Typescript.Delegate (this.root_namespace, dele as Valadoc.Api.Delegate);
             signature.append_content (ts_dele.get_signature ());
-            signature.append ("\n",false);
+            signature.append ("\n", false);
         }
 
         //

@@ -40,12 +40,12 @@ public class Typescript.Interface : Typescript.Signable {
         // TODO comments builder
         signature.append ("\n/**\n", false);
         signature.append (" * @" + accessibility + "\n", false);
-        signature.append (" * @interface as abstract class\n", false);
+        // signature.append (" * @interface as abstract class\n", false);
         signature.append (" */\n", false);
 
         signature.append ("export");
-        signature.append_keyword ("abstract class");
-        // signature.append_keyword ("interface");
+        // signature.append_keyword ("abstract class");
+        signature.append_keyword ("interface");
         signature.append_symbol (this._interface);
 
         var type_parameters = this._interface.get_children_by_type (Valadoc.Api.NodeType.TYPE_PARAMETER, false);
@@ -120,7 +120,7 @@ public class Typescript.Interface : Typescript.Signable {
         foreach (var m in methods) {
             // Typescript.Interface? iface_param = null;
             // iface_param = this;
-            var ts_m = new Typescript.Method (this.root_namespace, m as Valadoc.Api.Method, null, this, null, null, null);
+            var ts_m = new Typescript.Method (this.root_namespace, m as Valadoc.Api.Method, this);
             signature.append_content (ts_m.get_signature ());
             signature.append (";\n", false);
         }

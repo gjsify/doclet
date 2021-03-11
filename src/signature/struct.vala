@@ -20,7 +20,7 @@ public class Typescript.Struct : Typescript.Signable {
         var methods = this._struct.get_children_by_types ({ Valadoc.Api.NodeType.METHOD }, false);
         Vala.ArrayList<Typescript.Method> ts_methods = new Vala.ArrayList<Typescript.Method> ();
         foreach (var method in methods) {
-            var ts_method = new Typescript.Method (this.root_namespace, method as Valadoc.Api.Method, null, null, this, null, null);
+            var ts_method = new Typescript.Method (this.root_namespace, method as Valadoc.Api.Method, this);
             ts_methods.add (ts_method);
         }
         return ts_methods;

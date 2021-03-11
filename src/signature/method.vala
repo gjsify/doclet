@@ -4,35 +4,14 @@ public class Typescript.Method : Typescript.Signable {
      */
     protected Valadoc.Api.Method _method;
     /**
-     * Parent Class of this method
+     * Parent Class / Interface / Struct / Enum Error Domain of this method
      */
-    protected Typescript.Class ? _class = null;
-    /**
-     * Parent Interface of this method
-     */
-    protected Typescript.Interface ? _interface = null;
-    /**
-     * Parent Struct of this method
-     */
-    protected Typescript.Struct ? _struct = null;
-    /**
-     * Parent Enum of this method
-     */
-    protected Typescript.Enum ? _enum = null;
-    /**
-     * Parent Error Domain of this method
-     * In Vala Error Domains can have methods
-     */
-    protected Typescript.ErrorDomain ? _error_domain = null;
+    protected Typescript.Signable ? parent_symbol = null;
 
-    public Method (Typescript.Namespace ? root_namespace, Valadoc.Api.Method m, Typescript.Class ? cls, Typescript.Interface ? iface, Typescript.Struct ? stru, Typescript.Enum ? enu, Typescript.ErrorDomain ? error_domain) {
+    public Method (Typescript.Namespace ? root_namespace, Valadoc.Api.Method _method, Typescript.Signable ? parent_symbol) {
         this.root_namespace = root_namespace;
-        this._method = m;
-        this._class = cls;
-        this._interface = iface;
-        this._struct = stru;
-        this._enum = enu;
-        this._error_domain = error_domain;
+        this._method = _method;
+        this.parent_symbol = parent_symbol;
     }
 
     public bool is_global () {
@@ -40,7 +19,7 @@ public class Typescript.Method : Typescript.Signable {
         if (this.root_namespace != null && Typescript.has_parent_namespace (name)) {
             return false;
         }
-        return this._class == null && this._interface == null && this._struct == null && this._enum == null && this._error_domain == null;
+        return this.parent_symbol == null;
     }
 
     public string get_name (bool as_virtual = false) {
@@ -51,16 +30,21 @@ public class Typescript.Method : Typescript.Signable {
             name = this.root_namespace.remove_vala_namespace (name);
         }
         // Remove class name if present
-        if (this._class != null) {
-            name = this._class.remove_namespace (name);
-        }
-        // Remove interface name if present
-        if (this._interface != null) {
-            name = this._interface.remove_namespace (name);
-        }
-        // Remove interface name if present
-        if (this._enum != null) {
-            name = this._enum.remove_namespace (name);
+        if (this.parent_symbol != null) {
+            if (this.parent_symbol is Typescript.Class) {
+                var _class = this.parent_symbol as Typescript.Class;
+                name = _class.remove_namespace (name);
+            }
+            // Remove interface name if present
+            if (this.parent_symbol is Typescript.Interface) {
+                var _iface = this.parent_symbol as Typescript.Interface;
+                name = _iface.remove_namespace (name);
+            }
+            // Remove interface name if present
+            if (this.parent_symbol is Typescript.Enum) {
+                var _enum = this.parent_symbol as Typescript.Enum;
+                name = _enum.remove_namespace (name);
+            }
         }
         if (name.has_prefix ("@")) {
             has_vala_at_prefix = true;
@@ -110,37 +94,51 @@ public class Typescript.Method : Typescript.Signable {
      * Name of the class or interface in which this method is defined
      */
     public string ? get_parent_name () {
-        if (this._interface != null) {
-            return this._interface.get_name ();
+        if (this.parent_symbol != null) {
+            if (this.parent_symbol is Typescript.Interface) {
+                var _interface = this.parent_symbol as Typescript.Interface;
+                return _interface.get_name ();
+            }
+            if (this.parent_symbol is Typescript.Class) {
+                var _class = this.parent_symbol as Typescript.Class;
+                return _class.get_name ();
+            }
+            if (this.parent_symbol is Typescript.Struct) {
+                var _struct = this.parent_symbol as Typescript.Struct;
+                return _struct.get_name ();
+            }
+            if (this.parent_symbol is Typescript.Enum) {
+                var _enum = this.parent_symbol as Typescript.Enum;
+                return _enum.get_name ();
+            }
+            if (this.parent_symbol is Typescript.ErrorDomain) {
+                var _error_domain = this.parent_symbol as Typescript.ErrorDomain;
+                return _error_domain.get_name ();
+            }
         }
-        if (this._class != null) {
-            return this._class.get_name ();
-        }
-        if (this._struct != null) {
-            return this._struct.get_name ();
-        }
-        if (this._enum != null) {
-            return this._enum.get_name ();
-        }
+
         return null;
     }
 
     public string ? get_parent_type () {
-        if (this._interface != null) {
-            return "interface";
+        if (this.parent_symbol != null) {
+            if (this.parent_symbol is Typescript.Interface) {
+                return "interface";
+            }
+            if (this.parent_symbol is Typescript.Class) {
+                return "class";
+            }
+            if (this.parent_symbol is Typescript.Struct) {
+                return "struct";
+            }
+            if (this.parent_symbol is Typescript.Enum) {
+                return "enum";
+            }
+            if (this.parent_symbol is Typescript.ErrorDomain) {
+                return "errordomain";
+            }
         }
-        if (this._class != null) {
-            return "class";
-        }
-        if (this._struct != null) {
-            return "struct";
-        }
-        if (this._enum != null) {
-            return "enum";
-        }
-        if (this._error_domain != null) {
-            return "errordomain";
-        }
+
         return "unknown";
     }
 
@@ -150,7 +148,7 @@ public class Typescript.Method : Typescript.Signable {
             if (parent != null) {
                 return parent;
             } else {
-                GLib.stderr.printf (@"Parent for constructor of $(this.get_parent_type()) \"$(this.get_name())\" not found!\n");
+                GLib.stderr.printf (@"Parent for constructor of '$(this.get_parent_type())' '$(this.get_name())' not found!\n");
             }
         }
         var ts_return_type = new Typescript.TypeReference (this.root_namespace, this._method.return_type as Valadoc.Api.TypeReference);
@@ -176,7 +174,11 @@ public class Typescript.Method : Typescript.Signable {
                 signature.append_keyword ("export function");
             }
         } else {
-            signature.append_keyword (this._method.accessibility.to_string ());
+            if (this.get_parent_type () == "class") {
+                signature.append_keyword (this._method.accessibility.to_string ());
+            } else {
+                signature.append_keyword (@"/* $(this._method.accessibility.to_string ())*/");
+            }
         }
 
         if (!this._method.is_constructor) {
