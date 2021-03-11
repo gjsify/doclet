@@ -169,9 +169,12 @@ public class Typescript.Method : Typescript.Signable {
             }
         } else {
             if (this.get_parent_type () == "class") {
-                signature.append_keyword (this._method.accessibility.to_string ());
+                // Public is the default
+                if (accessibility != "public") {
+                    signature.append_keyword (accessibility);
+                }
             } else {
-                signature.append_keyword (@"/* $(this._method.accessibility.to_string ())*/");
+                signature.append_keyword (@"/* $(accessibility)*/");
             }
         }
 

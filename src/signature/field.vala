@@ -18,7 +18,7 @@ public class Typescript.Field : Typescript.Signable {
 
         var accessibility = this.field.accessibility.to_string ();
         if (accessibility != "public") {
-            stdout.printf (@"WARN: Struct field $(this.get_name()) is not public!");
+            printerr (@"WARN: Struct field $(this.get_name()) is not public!\n");
             return "";
         }
         if (this.field.is_static) {

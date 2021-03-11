@@ -49,7 +49,10 @@ public class Typescript.Property : Typescript.Signable {
         var signature = new Typescript.SignatureBuilder ();
         var accessibility = this.get_accessibility ();
         if (this.get_parent_type () == "class") {
-            signature.append_keyword (accessibility);
+            // Public is the default
+            if (accessibility == "public") {
+                signature.append_keyword (accessibility);
+            }
         } else {
             signature.append_keyword (@"/* $(accessibility) */");
         }

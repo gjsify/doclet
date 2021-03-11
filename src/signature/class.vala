@@ -1,3 +1,8 @@
+public enum KeyType {
+    NAME,
+    SIGNATURE
+}
+
 public class Typescript.Class : Typescript.Signable {
     protected Valadoc.Api.Class _class;
 
@@ -57,49 +62,53 @@ public class Typescript.Class : Typescript.Signable {
         return null;
     }
 
-    public Gee.HashMap<string, Typescript.Method> get_methods (bool only_public = true) {
+    public Gee.HashMap<string, Typescript.Method> get_methods (bool only_public = true, KeyType key_type = KeyType.SIGNATURE) {
         var ts_methods = new Gee.HashMap<string, Typescript.Method>();
         var methods = this._class.get_children_by_types ({ Valadoc.Api.NodeType.METHOD }, false);
         foreach (var method in methods) {
             var ts_method = new Typescript.Method (this.root_namespace, method as Valadoc.Api.Method, this);
             if (ts_method.is_public ()) {
-                ts_methods.set (ts_method.get_signature (), ts_method);
+                string key = key_type == KeyType.SIGNATURE ? ts_method.get_signature () : ts_method.get_name ();
+                ts_methods.set (key, ts_method);
             }
         }
         return ts_methods;
     }
 
-    public Gee.HashMap<string, Typescript.Method> get_creation_methods (bool only_public = true) {
+    public Gee.HashMap<string, Typescript.Method> get_creation_methods (bool only_public = true, KeyType key_type = KeyType.SIGNATURE) {
         var ts_methods = new Gee.HashMap<string, Typescript.Method>();
         var methods = this._class.get_children_by_types ({ Valadoc.Api.NodeType.CREATION_METHOD }, false);
         foreach (var method in methods) {
             var ts_method = new Typescript.Method (this.root_namespace, method as Valadoc.Api.Method, this);
             if (ts_method.is_public ()) {
-                ts_methods.set (ts_method.get_signature (), ts_method);
+                string key = key_type == KeyType.SIGNATURE ? ts_method.get_signature () : ts_method.get_name ();
+                ts_methods.set (key, ts_method);
             }
         }
         return ts_methods;
     }
 
-    public Gee.HashMap<string, Typescript.Method> get_static_methods (bool only_public = true) {
+    public Gee.HashMap<string, Typescript.Method> get_static_methods (bool only_public = true, KeyType key_type = KeyType.SIGNATURE) {
         var ts_methods = new Gee.HashMap<string, Typescript.Method>();
         var methods = this._class.get_children_by_types ({ Valadoc.Api.NodeType.STATIC_METHOD }, false);
         foreach (var method in methods) {
             var ts_method = new Typescript.Method (this.root_namespace, method as Valadoc.Api.Method, this);
             if (ts_method.is_public ()) {
-                ts_methods.set (ts_method.get_signature (), ts_method);
+                string key = key_type == KeyType.SIGNATURE ? ts_method.get_signature () : ts_method.get_name ();
+                ts_methods.set (key, ts_method);
             }
         }
         return ts_methods;
     }
 
-    public Gee.HashMap<string, Typescript.Signal> get_signals () {
+    public Gee.HashMap<string, Typescript.Signal> get_signals (KeyType key_type = KeyType.SIGNATURE) {
         var ts_signals = new Gee.HashMap<string, Typescript.Signal>();
         var signals = this._class.get_children_by_types ({ Valadoc.Api.NodeType.SIGNAL },false);
         if (signals != null && !signals.is_empty) {
             foreach (var sig in signals) {
                 var ts_sig = new Typescript.Signal (this.root_namespace,sig as Valadoc.Api.Signal,this);
-                ts_signals.set (ts_sig.get_signature (),ts_sig);
+                string key = key_type == KeyType.SIGNATURE ? ts_sig.get_signature () : ts_sig.get_name ();
+                ts_signals.set (key,ts_sig);
             }
         }
         return ts_signals;
@@ -112,18 +121,18 @@ public class Typescript.Class : Typescript.Signable {
         return Typescript.remove_namespace (vala_full_name,this.get_name ());
     }
 
-    protected Gee.HashMap<string,Typescript.Signal> get_missing_overloaded_signals () {
+    protected Gee.HashMap<string,Typescript.Signal> get_missing_overloaded_signals (KeyType key_type = KeyType.SIGNATURE) {
         var overloaded_signals = new Gee.HashMap<string,Typescript.Signal> ();
-        var class_signals = this.get_signals ();
-
+        var class_signals = this.get_signals (key_type);
         var ts_base_class = this.get_base_class ();
+
         while (ts_base_class != null) {
-            var ts_base_signals = ts_base_class.get_signals ();
+            var ts_base_signals = ts_base_class.get_signals (key_type);
             if (ts_base_signals != null && !ts_base_signals.is_empty) {
                 foreach (var ts_base_signal in ts_base_signals.values) {
-                    var signature = ts_base_signal.get_signature ();
-                    if (!class_signals.has_key (signature))
-                        overloaded_signals.set (signature,ts_base_signal);
+                    var key = key_type == KeyType.SIGNATURE ? ts_base_signal.get_signature () : ts_base_signal.get_name ();
+                    if (!class_signals.has_key (key))
+                        overloaded_signals.set (key,ts_base_signal);
                 }
             }
             ts_base_class = ts_base_class.get_base_class ();
@@ -132,25 +141,50 @@ public class Typescript.Class : Typescript.Signable {
         return overloaded_signals;
     }
 
-    protected Gee.HashMap<string,Typescript.Method> get_missing_overloaded_creation_methods () {
+    protected Gee.HashMap<string,Typescript.Method> get_missing_overloaded_creation_methods (bool only_public = true,KeyType key_type = KeyType.SIGNATURE) {
         var overloaded_creation_methods = new Gee.HashMap<string,Typescript.Method> ();
-        var class_creation_methods = this.get_creation_methods ();
-
+        var class_creation_methods = this.get_creation_methods (only_public,key_type);
         var ts_base_class = this.get_base_class ();
+
         while (ts_base_class != null) {
-            print (@"base_class: $(ts_base_class.get_name())\n");
-            var ts_base_creation_methods = ts_base_class.get_creation_methods ();
+            var ts_base_creation_methods = ts_base_class.get_creation_methods (only_public,key_type);
             if (ts_base_creation_methods != null && !ts_base_creation_methods.is_empty) {
                 foreach (var ts_base_constructor in ts_base_creation_methods.values) {
-                    var signature = ts_base_constructor.get_signature ();
-                    if (!class_creation_methods.has_key (signature))
-                        overloaded_creation_methods.set (signature,ts_base_constructor);
+                    var key = key_type == KeyType.SIGNATURE ? ts_base_constructor.get_signature () : ts_base_constructor.get_name ();
+                    if (!class_creation_methods.has_key (key))
+                        overloaded_creation_methods.set (key,ts_base_constructor);
                 }
             }
             ts_base_class = ts_base_class.get_base_class ();
         }
 
         return overloaded_creation_methods;
+    }
+
+    protected Gee.HashMap<string,Typescript.Method> get_missing_overloaded_methods (bool only_public = true) {
+        var overloaded_methods = new Gee.HashMap<string,Typescript.Method> ();
+        var class_methods = this.get_methods (only_public,KeyType.NAME);
+        var ts_base_class = this.get_base_class ();
+
+        while (ts_base_class != null) {
+            var ts_base_methods = ts_base_class.get_methods (only_public,KeyType.NAME);
+            if (ts_base_methods != null && !ts_base_methods.is_empty) {
+                foreach (var ts_base_method in ts_base_methods.values) {
+                    var name = ts_base_method.get_name ();
+                    // Method is only overloaded if other method with the same name are exists
+                    if (class_methods.has_key (name)) {
+                        var class_signature = class_methods.get (name).get_signature ();
+                        var base_signature = ts_base_method.get_signature ();
+                        if (base_signature != class_signature) {
+                            overloaded_methods.set (base_signature,ts_base_method);
+                        }
+                    }
+                }
+            }
+            ts_base_class = ts_base_class.get_base_class ();
+        }
+
+        return overloaded_methods;
     }
 
     protected string get_implementations_str (Vala.Collection<Valadoc.Api.TypeReference> interfaces) {
@@ -208,7 +242,6 @@ public class Typescript.Class : Typescript.Signable {
 
 
             // Overloaded Signals
-
             var overloaded_ts_signals = this.get_missing_overloaded_signals ();
             if (overloaded_ts_signals.size > 0) {
                 signature.append_line ("// Overloaded Signals\n");
@@ -218,6 +251,15 @@ public class Typescript.Class : Typescript.Signable {
                 }
             }
 
+            // Overload Methods
+            var overloaded_ts_methods = this.get_missing_overloaded_methods ();
+            if (overloaded_ts_methods.size > 0) {
+                signature.append_line ("// Overloaded Methods\n");
+                foreach (var ts_method in overloaded_ts_methods.values) {
+                    signature.append_content (ts_method.build_signature ());
+                    signature.append ("\n",false);
+                }
+            }
 
             signature.append_line (@"}\n");
         }
